@@ -5,6 +5,7 @@ Audio track looper running on Raspberry Pi.
 
 On the Raspberry Pi:
 1. Flash official RaspiOS `2022-01-28-raspios-bullseye-armhf.img` on SD.
+   Plug in USB soundcard with input and output.
 2. Boot Raspberry, let it reboot (expand filesystem), configure WiFi, change user password.
 3. Enable SSH: `sudo raspi-config` / Interface Options / SSH
 
@@ -32,13 +33,15 @@ sudo apt install python3-pyaudio
 (On Debian): `sudo apt install portaudio19-dev`
 
 6. Setup volume levels with `alsamixer`:
-  F6, select USB Audio Device, F5 (to view Playback and Capture), 
-  Speaker Volume to 100%, Capture Mic Volume to 27%.
+   F6, select USB Audio Device, F5 (to view Playback and Capture), 
+   Speaker Volume to 100%, Capture Mic Volume to 27%.
 
-7. Run `make push-first` to push source code.
+7. Comment out `load-module module-suspend-on-idle` in `/etc/pulse/default.pa`.
+
+8. Run `make push-first` to push source code.
 
 On Raspberry Pi:
-8. Run `make run` in `~/looper`.
+9. Run `make run` in `~/looper`.
 
 ## List input devices
 ```python
@@ -70,3 +73,4 @@ for i in range(0, numdevices):
 
 ## References
 https://github.com/RandomVertebrate/raspi-looper
+http://people.csail.mit.edu/hubert/pyaudio/#docs
