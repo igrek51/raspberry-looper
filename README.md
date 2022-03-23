@@ -24,3 +24,49 @@ Host pi
 	User pi
 ```
 Then you can log in with `ssh pi`.
+
+5. Install pyaudio:
+```bash
+sudo apt install python3-pyaudio
+```
+(On Debian): `sudo apt install portaudio19-dev`
+
+6. Setup volume levels with `alsamixer`:
+  F6, select USB Audio Device, F5 (to view Playback and Capture), 
+  Speaker Volume to 100%, Capture Mic Volume to 27%.
+
+7. Run `make push-first` to push source code.
+
+On Raspberry Pi:
+8. Run `make run` in `~/looper`.
+
+## List input devices
+```python
+import pyaudio
+
+pa = pyaudio.PyAudio()
+n = pa.get_device_count()
+
+print('Found ' + str(n) + ' devices.')
+
+for i in range(n):
+    print('INDEX ' + str(i) + ': ' + str(pa.get_device_info_by_index(i)['name']))
+
+pa.terminate()
+```
+
+or
+
+```python
+import pyaudio
+p = pyaudio.PyAudio()
+info = p.get_host_api_info_by_index(0)
+numdevices = info.get('deviceCount')
+for i in range(0, numdevices):
+    if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+        print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'))
+```
+
+
+## References
+https://github.com/RandomVertebrate/raspi-looper
