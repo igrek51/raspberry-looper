@@ -1,13 +1,19 @@
 from nuclear.sublog import log, logerr
+from nuclear import CliBuilder
 
 from looper.wire import wire_input_output
 
 
 def main():
-    with logerr():
-        log.info('Starting looper...')
+    cli = CliBuilder()
+
+    @cli.add_command("wire")
+    def wire():
         wire_input_output()
 
-    
-if __name__ == '__main__':
-    main()
+    @cli.add_command("run")
+    def run():
+        wire_input_output()
+
+    with logerr():
+        cli.run()
