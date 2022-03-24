@@ -81,5 +81,6 @@ for i in range(0, numdevices):
 
 
 ## References
-https://github.com/RandomVertebrate/raspi-looper
-http://people.csail.mit.edu/hubert/pyaudio/#docs
+- https://github.com/RandomVertebrate/raspi-looper
+- http://people.csail.mit.edu/hubert/pyaudio/#docs
+- https://gpiozero.readthedocs.io/en/stable/recipes.html

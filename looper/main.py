@@ -1,7 +1,8 @@
-from nuclear.sublog import log, logerr
+from nuclear.sublog import logerr
 from nuclear import CliBuilder
 
 from looper.wire import wire_input_output
+from looper.runner.runner import run_looper
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
 
     @cli.add_command("run")
     def run():
-        wire_input_output()
+        run_looper()
 
     with logerr():
         cli.run()

@@ -4,7 +4,7 @@ import pyaudio
 from nuclear.sublog import log
 
 
-RATE = 44100  # sampling rate
+RATE = 44100  # sampling rate [Hz]
 CHUNK = 1024  # buffer size, number of frames per buffer
 FORMAT = pyaudio.paInt16  # Sampling size and format, bit depth (16-bit)
 INDEVICE = 1  # index of input device
@@ -16,6 +16,10 @@ def wire_input_output():
 
     pa = pyaudio.PyAudio()
 
+    buffers_processed = 0
+    buffer_length = 1000 * CHUNK / RATE  # milliseconds
+    log.info(f'buffer length: {buffer_length}ms')
+
     def loop_callback(in_data, frame_count, time_info, status_flags):
         """
         :param in_data: recorded data if input=True; else None
@@ -23,6 +27,7 @@ def wire_input_output():
         :param time_info: dictionary
         :param status_flags: PaCallbackFlags
         """
+        buffers_processed += 1
         return (in_data, pyaudio.paContinue)
 
     loop_stream = pa.open(
@@ -40,7 +45,7 @@ def wire_input_output():
 
     try:
         while loop_stream.is_active():
-            log.debug("Loop stream active...")
+            log.debug(f"Loop stream active, buffers processed: {buffers_processed}")
             time.sleep(1)
 
     except KeyboardInterrupt:
