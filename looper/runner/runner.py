@@ -12,5 +12,5 @@ def run_looper():
 
     pinout.green_led.pulse()
 
-    log.info("Ready to work.")
+    log.info("Ready to work")
     pause()

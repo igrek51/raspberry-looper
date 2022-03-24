@@ -3,22 +3,18 @@ import time
 import pyaudio
 from nuclear.sublog import log
 
-
-RATE = 44100  # sampling rate [Hz]
-CHUNK = 1024  # buffer size, number of frames per buffer
-FORMAT = pyaudio.paInt16  # Sampling size and format, bit depth (16-bit)
-INDEVICE = 1  # index of input device
-OUTDEVICE = 1  # index of output device
+from looper.runner.config import Config
 
 
 def wire_input_output():
     log.info("Wiring input with output...")
 
+    config = Config()
+
     pa = pyaudio.PyAudio()
 
     buffers_processed = 0
-    buffer_length = 1000 * CHUNK / RATE  # milliseconds
-    log.info(f'buffer length: {buffer_length}ms')
+    log.info(f'one buffer length: {config.buffer_length_ms}ms')
 
     def loop_callback(in_data, frame_count, time_info, status_flags):
         """
@@ -27,25 +23,36 @@ def wire_input_output():
         :param time_info: dictionary
         :param status_flags: PaCallbackFlags
         """
+        nonlocal buffers_processed
         buffers_processed += 1
         return (in_data, pyaudio.paContinue)
 
     loop_stream = pa.open(
-        format=FORMAT,
-        channels=1,  # mono
-        rate=RATE,
+        format=config.format,
+        channels=config.channels,
+        rate=config.sampling_rate,
         input=True,
         output=True,
-        input_device_index=INDEVICE,
-        output_device_index=OUTDEVICE,
-        frames_per_buffer=CHUNK,
+        input_device_index=config.in_device,
+        output_device_index=config.out_device,
+        frames_per_buffer=config.chunk_size,
         start=True,  # Start the stream running immediately
         stream_callback=loop_callback,
     )
 
     try:
+        start_time = time.time()
+        start_buffers_processed = 0
         while loop_stream.is_active():
-            log.debug(f"Loop stream active, buffers processed: {buffers_processed}")
+            delta_time = time.time() - start_time
+            delta_buffers = buffers_processed - start_buffers_processed
+            if delta_buffers > 0:
+                delta_buffer_length_ms = delta_time / delta_buffers * 1000
+                log.debug(f"delta_buffer_length_ms: {delta_buffer_length_ms}")
+            log.debug(f"Loop stream active, all buffers processed: {buffers_processed}")
+
+            start_time = time.time()
+            start_buffers_processed = buffers_processed
             time.sleep(1)
 
     except KeyboardInterrupt:

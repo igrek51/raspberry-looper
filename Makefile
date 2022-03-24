@@ -11,7 +11,9 @@ setup:
 
 push-first:
 	ssh pi "mkdir -p /home/pi/looper"
-	scp -r looper Makefile requirements.txt setup.py pi:/home/pi/looper/
+	scp -r \
+		looper Makefile requirements.txt requirements-dev.txt setup.py README.md notebooks \
+		pi:/home/pi/looper/
 	ssh pi "cd /home/pi/looper &&\
 		pip install -r requirements.txt &&\
 		python setup.py develop --user"
@@ -21,3 +23,6 @@ push:
 
 run:
 	looper wire
+
+jupyter:
+	jupyter lab --ip=0.0.0.0 --port=8080

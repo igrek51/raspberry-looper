@@ -12,13 +12,16 @@ class Config:
     chunk_size: int = 1024
 
     # Sampling size and format, bit depth (16-bit)
-    fomat = pyaudio.paInt16
+    format = pyaudio.paInt16
 
     # index of input device
     in_device: int = 1
 
     # index of output device
     out_device: int = 1
+
+    # mono
+    channels: int = 1
 
 
     @property
