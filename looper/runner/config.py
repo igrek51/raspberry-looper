@@ -23,6 +23,10 @@ class Config:
     # mono
     channels: int = 1
 
+    # latency between recording sound and playing it again in a loopback in milliseconds
+    # see https://music.stackexchange.com/a/30325 for optimal values
+    latency_ms: float = 46.44
+
 
     @property
     def buffer_length_ms(self) -> float:

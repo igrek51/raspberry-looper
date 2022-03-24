@@ -65,6 +65,7 @@ def measure_latency():
         time.sleep(0.1)
     log.debug("recording stopped")
 
-    Path('out').mkdir(exist_ok=True)
-    np.save('out/latency.rec', recordings)
-    log.debug("recordings saved")
+    record_file = Path('out/latency.rec')
+    record_file.parent.mkdir(exist_ok=True)
+    np.save(str(record_file), recordings)
+    log.debug(f"recordings saved to {record_file}")

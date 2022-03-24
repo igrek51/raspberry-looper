@@ -26,3 +26,6 @@ run:
 
 jupyter:
 	jupyter lab --ip=0.0.0.0 --port=8080
+
+pull-notebooks:
+	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/

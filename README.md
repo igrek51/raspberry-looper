@@ -37,8 +37,8 @@ On the Raspberry Pi:
     - F6, 
     - select USB Audio Device,
     - F5 (to view Playback and Capture), 
-    - Speaker Volume to 100%,
-    - Capture Mic Volume to 27%.
+    - Speaker Volume to 100% (0 dB),
+    - Capture Mic Volume to 13% (0 dB).
 
 7. Comment out `load-module module-suspend-on-idle` in `/etc/pulse/default.pa`.
 
