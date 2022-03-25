@@ -1,5 +1,6 @@
 import time
 from pathlib import Path
+import math
 
 import pyaudio
 from nuclear.sublog import log
@@ -9,12 +10,14 @@ from looper.runner.config import Config
 
 
 def measure_latency():
-    log.info("Measuring latency...")
+    log.info("Measuring output-input latency...")
+    log.info("Put microphone close to a speaker or wire the output with the input.")
     pa = pyaudio.PyAudio()
     config = Config()
     chunk = config.chunk_size
 
     silence = np.zeros(chunk, dtype=np.int16)
+    amplitude = 32767
 
     log.info(f"one buffer length: {config.buffer_length_ms}ms")
 
@@ -22,7 +25,7 @@ def measure_latency():
     sine_sample_frequency = sine_frequency / config.sampling_rate
     sine = np.empty(chunk, dtype=np.int16)
     for i in range(chunk):
-        sine[i] = np.sin(2 * np.pi * sine_sample_frequency * i) * 32767
+        sine[i] = np.sin(2 * np.pi * sine_sample_frequency * i) * amplitude
 
     max_recordings = 10
     recordings = np.zeros([max_recordings, chunk], dtype=np.int16)
@@ -68,4 +71,34 @@ def measure_latency():
     record_file = Path('out/latency.rec')
     record_file.parent.mkdir(exist_ok=True)
     np.save(str(record_file), recordings)
-    log.debug(f"recordings saved to {record_file}")
+    log.debug("recordings saved", record_file=record_file)
+
+    joined = np.concatenate(recordings)
+    threshold_amp = amplitude / 2
+    start_sample = np.argmax(joined>threshold_amp)
+    
+    if start_sample == 0:
+        raise RuntimeError('cannot find a tone in a recorded audio')
+
+    max_amplitude = max(np.max(joined), -np.min(joined))
+
+    latency_chunks = math.ceil(start_sample / config.chunk_size)
+
+    chunk_length_ms = 1000 * config.chunk_size / config.sampling_rate
+
+    log.debug("tone recognized", 
+        start_sample=start_sample, 
+        max_amplitude=max_amplitude, 
+        latency_chunks=latency_chunks, 
+        chunk_length_ms=chunk_length_ms)
+
+    sample_time_s = 1 / config.sampling_rate
+    latency_ms = start_sample * sample_time_s * 1000
+
+    # latency based on minimum number of recorded chunks
+    latency_max_ms = latency_chunks * config.chunk_size * sample_time_s * 1000
+
+    log.info('latency calculated', 
+        min_latency_ms=latency_ms, 
+        max_latency_max_ms=latency_max_ms)
+    log.info(f'suggested latency: {latency_max_ms}ms')

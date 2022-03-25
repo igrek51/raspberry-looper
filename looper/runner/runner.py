@@ -10,7 +10,7 @@ def run_looper():
 
     pinout = Pinout()
 
-    pinout.green_led.pulse()
+    pinout.green_led.pulse(fade_in_time=0.2, fade_out_time=0.2)
 
     log.info("Ready to work")
     pause()
