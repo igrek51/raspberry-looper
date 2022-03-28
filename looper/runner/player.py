@@ -1,3 +1,4 @@
+import asyncio
 from signal import pause
 from dataclasses import dataclass
 import math
@@ -24,11 +25,9 @@ class Player:
     current_buffer_idx: int = 0
 
     def init(self) -> None:
-        self.pinout.loopback_blue_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
+        self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
 
         config = self.config
-
-        silence = np.zeros(config.chunk_size, dtype=np.int16)
 
         log.debug("Initializing PyAudio...")
         pa = pyaudio.PyAudio()
@@ -67,7 +66,7 @@ class Player:
                 # just listening to input
                 return input_chunk, pyaudio.paContinue
 
-        loop_stream = pa.open(
+        self.loop_stream = pa.open(
             format=config.format,
             channels=config.channels,
             rate=config.sampling_rate,
@@ -80,30 +79,63 @@ class Player:
             stream_callback=stream_callback,
         )
 
+        self.pinout.on_button_click(
+            self.pinout.record_button,
+            on_click=self.toggle_recording,
+        )
         self.pinout.on_button_click_and_hold(
-            self.pinout.record_button, 
-            on_click=self.toggle_recording, 
-            on_hold=self.reset_loop)
+            self.pinout.play_button,
+            on_click=self.toggle_play,
+            on_hold=self.reset_loop,
+        )
 
         log.info('Ready to work')
-
         try:
-            while loop_stream.is_active():
-                time.sleep(1)
+            asyncio.run(self.main_loop())
 
         except KeyboardInterrupt:
             log.debug('closing...')
-            loop_stream.stop_stream()
-            loop_stream.close()
+            self.pinout.init_led()
+            self.loop_stream.stop_stream()
+            self.loop_stream.close()
             pa.terminate()
             log.info('Stream closed')
 
+    async def main_loop(self):
+        await asyncio.gather(
+            self.stream_monitor_loop(),
+            self.progress_loop(),
+        )
+
+    async def stream_monitor_loop(self):
+        while self.loop_stream.is_active():
+            await asyncio.sleep(1)
+
+    async def progress_loop(self):
+        while True:
+            await self.progress_loop_step()
+
+    async def progress_loop_step(self):
+        if not self.playing:
+            self.pinout.progress_led.off()
+            await asyncio.sleep(0.5)
+
+        chunks_left = len(self.master_loop_chunks) - self.current_buffer_idx
+        chunks_left_s = chunks_left * self.config.chunk_length_ms / 1000
+        self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
+        await asyncio.sleep(chunks_left_s)
 
     def toggle_recording(self):
         if self.recording:
             self.stop_recording()
         else:
             self.start_recording()
+
+    def toggle_play(self):
+        if self.playing:
+            self.playing = False
+        elif not self.playing and self.master_loop_recorded:
+            self.playing = True
 
     def start_recording(self):
         self.recording = True
@@ -112,7 +144,7 @@ class Player:
             log.debug('recording master loop...')
         else:
             log.debug('overdubbing...')
-        self.pinout.record_red_led.on()
+        self.pinout.record_led.on()
 
     def stop_recording(self):
         self.current_buffer_idx = 0
@@ -126,8 +158,8 @@ class Player:
                 loop_duration_s=loop_duration_s)
         else:   
             log.info(f'overdub stopped')
-        self.pinout.record_red_led.off()
-        self.pinout.play_green_led.on()
+        self.pinout.record_led.off()
+        self.pinout.play_led.on()
 
     def reset_loop(self):
         self.current_buffer_idx = 0
@@ -135,6 +167,7 @@ class Player:
         self.playing = False
         self.master_loop_recorded = False
         self.master_loop_chunks = []
-        self.pinout.play_green_led.off()
-        self.pinout.record_red_led.off()
+        self.pinout.play_led.off()
+        self.pinout.record_led.off()
+        self.pinout.progress_led.off()
         log.debug('loop reset')
