@@ -33,3 +33,7 @@ class Config:
     @property
     def chunk_length_ms(self) -> float:
         return 1000 * self.chunk_size / self.sampling_rate
+
+    @property
+    def chunk_length_s(self) -> float:
+        return self.chunk_size / self.sampling_rate

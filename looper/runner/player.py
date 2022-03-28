@@ -78,11 +78,11 @@ class Player:
         )
 
         self.pinout.on_button_click(
-            self.pinout.record_button,
-            on_click=self.toggle_recording,
+            self.pinout.record_buttons[0],
+            on_click=self.toggle_record,
         )
         self.pinout.on_button_click_and_hold(
-            self.pinout.play_button,
+            self.pinout.play_buttons[0],
             on_click=self.toggle_play,
             on_hold=self.reset_loop,
         )
@@ -93,7 +93,7 @@ class Player:
 
         except KeyboardInterrupt:
             log.debug('closing...')
-            self.pinout.init_led()
+            self.pinout.init_leds()
             self.loop_stream.stop_stream()
             self.loop_stream.close()
             pa.terminate()
@@ -120,11 +120,11 @@ class Player:
             return
 
         chunks_left = len(self.master_loop_chunks) - self.current_buffer_idx
-        chunks_left_s = chunks_left * self.config.chunk_length_ms / 1000
+        chunks_left_s = chunks_left * self.config.chunk_length_s
         self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
         await asyncio.sleep(chunks_left_s)
 
-    def toggle_recording(self):
+    def toggle_record(self):
         if self.recording:
             self.stop_recording()
         else:
@@ -133,10 +133,10 @@ class Player:
     def toggle_play(self):
         if self.playing:
             self.playing = False
-            self.pinout.play_led.off()
+            self.pinout.play_leds[0].off()
         elif not self.playing and self.master_loop_recorded:
             self.playing = True
-            self.pinout.play_led.on()
+            self.pinout.play_leds[0].on()
 
     def start_recording(self):
         self.recording = True
@@ -145,7 +145,7 @@ class Player:
             log.debug('recording master loop...')
         else:
             log.debug('overdubbing...')
-        self.pinout.record_led.on()
+        self.pinout.record_leds[0].on()
 
     def stop_recording(self):
         self.current_buffer_idx = 0
@@ -153,14 +153,14 @@ class Player:
         self.playing = True
         if not self.master_loop_recorded:
             self.master_loop_recorded = True
-            loop_duration_s = len(self.master_loop_chunks) * self.config.chunk_length_ms / 1000
+            loop_duration_s = len(self.master_loop_chunks) * self.config.chunk_length_s
             log.info(f'recorded master loop', 
                 chunks=len(self.master_loop_chunks),
                 loop_duration_s=loop_duration_s)
         else:   
             log.info(f'overdub stopped')
-        self.pinout.record_led.off()
-        self.pinout.play_led.on()
+        self.pinout.record_leds[0].off()
+        self.pinout.play_leds[0].on()
 
     def reset_loop(self):
         self.current_buffer_idx = 0
@@ -168,7 +168,7 @@ class Player:
         self.playing = False
         self.master_loop_recorded = False
         self.master_loop_chunks = []
-        self.pinout.play_led.off()
-        self.pinout.record_led.off()
+        self.pinout.play_leds[0].off()
+        self.pinout.record_leds[0].off()
         self.pinout.progress_led.off()
         log.debug('loop reset')

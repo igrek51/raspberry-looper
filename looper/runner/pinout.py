@@ -5,20 +5,36 @@ from gpiozero import LED, Button, PWMLED
 class Pinout:
     def __init__(self) -> None:
         self.loopback_led = PWMLED(27)  # blue
-        self.record_led = LED(22)  # red
-        self.play_led = LED(17)  # green
         self.progress_led = PWMLED(10)  # white
 
-        self.record_button = Button(3)
-        self.play_button = Button(2)
+        self.record_leds = [
+            LED(11),  # red
+            LED(22),  # red
+        ]
+        self.play_leds = [
+            LED(9),  # green
+            LED(17),  # green
+        ]
 
-        self.init_led()
+        self.record_buttons = [
+            Button(6),
+            Button(3),
+        ]
+        self.play_buttons = [
+            Button(5),
+            Button(2),
+        ]
 
-    def init_led(self):
+        self.init_leds()
+
+    def init_leds(self):
         self.loopback_led.on()
-        self.record_led.off()
-        self.play_led.off()
         self.progress_led.off()
+
+        for led in self.record_leds:
+            led.off()
+        for led in self.play_buttons:
+            led.off()
 
     def on_button_click_and_hold(self, 
         btn: Button,
