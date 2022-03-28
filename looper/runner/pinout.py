@@ -24,6 +24,7 @@ class Pinout:
             Button(5),
             Button(2),
         ]
+        self.shutdown_button = Button(13)
 
         self.init_leds()
 

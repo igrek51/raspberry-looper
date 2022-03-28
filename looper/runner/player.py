@@ -2,8 +2,10 @@ import asyncio
 from signal import pause
 from dataclasses import dataclass
 from typing import List
+import time
 
 from nuclear.sublog import log
+from nuclear.utils.shell import shell
 import pyaudio
 import numpy as np
 
@@ -23,7 +25,6 @@ class Player:
     current_buffer_idx: int = 0
 
     def run(self) -> None:
-        self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
 
         config = self.config
 
@@ -73,9 +74,12 @@ class Player:
             input_device_index=config.in_device,
             output_device_index=config.out_device,
             frames_per_buffer=config.chunk_size,
-            start=True,
+            start=False,
             stream_callback=stream_callback,
         )
+        self.loop_stream.start_stream()
+
+        self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
 
         self.pinout.on_button_click(
             self.pinout.record_buttons[0],
@@ -86,6 +90,7 @@ class Player:
             on_click=self.toggle_play,
             on_hold=self.reset_loop,
         )
+        self.pinout.shutdown_button.when_held(self.shutdown)
 
         log.info('Ready to work')
         try:
@@ -172,3 +177,10 @@ class Player:
         self.pinout.record_leds[0].off()
         self.pinout.progress_led.off()
         log.debug('loop reset')
+
+    def shutdown(self):
+        log.info('shutting down...')
+        self.loop_stream.stop_stream()
+        self.pinout.loopback_led.blink(on_time=0.04, off_time=0.04)
+        time.sleep(1)
+        shell('sudo shutdown -h now')
