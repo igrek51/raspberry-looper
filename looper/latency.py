@@ -7,6 +7,7 @@ from nuclear.sublog import log
 import numpy as np
 
 from looper.runner.config import Config
+from looper.runner.dsp import SignalProcessor
 
 
 def measure_latency():
@@ -17,17 +18,14 @@ def measure_latency():
 
     config = Config()
     chunk = config.chunk_size
+    dsp = SignalProcessor(config)
 
-    silence = np.zeros(chunk, dtype=np.int16)
+    silence = dsp.silence()
     amplitude = 32767
 
     log.info(f"one buffer length: {config.chunk_length_ms}ms")
 
-    sine_frequency = 440
-    sine_sample_frequency = sine_frequency / config.sampling_rate
-    sine = np.empty(chunk, dtype=np.int16)
-    for i in range(chunk):
-        sine[i] = np.sin(2 * np.pi * sine_sample_frequency * i) * amplitude
+    sine = dsp.sine(frequency=440, amplitude=amplitude)
 
     max_recordings = 10
     recordings = np.zeros([max_recordings, chunk], dtype=np.int16)

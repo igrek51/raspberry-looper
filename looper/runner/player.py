@@ -1,8 +1,6 @@
 import asyncio
 from signal import pause
 from dataclasses import dataclass
-import math
-import time
 from typing import List
 
 from nuclear.sublog import log
@@ -24,7 +22,7 @@ class Player:
     master_loop_chunks: List[np.array] = None
     current_buffer_idx: int = 0
 
-    def init(self) -> None:
+    def run(self) -> None:
         self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
 
         config = self.config
@@ -119,6 +117,7 @@ class Player:
         if not self.playing:
             self.pinout.progress_led.off()
             await asyncio.sleep(0.5)
+            return
 
         chunks_left = len(self.master_loop_chunks) - self.current_buffer_idx
         chunks_left_s = chunks_left * self.config.chunk_length_ms / 1000
@@ -134,8 +133,10 @@ class Player:
     def toggle_play(self):
         if self.playing:
             self.playing = False
+            self.pinout.play_led.off()
         elif not self.playing and self.master_loop_recorded:
             self.playing = True
+            self.pinout.play_led.on()
 
     def start_recording(self):
         self.recording = True

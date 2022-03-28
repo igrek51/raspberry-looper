@@ -10,4 +10,4 @@ def run_looper():
     pinout = Pinout()
     config = Config()
     player = Player(pinout, config)
-    player.init()
+    player.run()
