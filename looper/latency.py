@@ -12,7 +12,9 @@ from looper.runner.config import Config
 def measure_latency():
     log.info("Measuring output-input latency...")
     log.info("Put microphone close to a speaker or wire the output with the input.")
+    log.debug("Initializing PyAudio...")
     pa = pyaudio.PyAudio()
+
     config = Config()
     chunk = config.chunk_size
 

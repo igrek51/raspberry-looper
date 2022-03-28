@@ -27,6 +27,8 @@ class Config:
     # see https://music.stackexchange.com/a/30325 for optimal values
     latency_ms: float = 46.44
 
+    max_loop_duration_s: float = 2 * 60
+
 
     @property
     def buffer_length_ms(self) -> float:
