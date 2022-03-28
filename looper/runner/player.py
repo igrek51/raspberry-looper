@@ -120,9 +120,12 @@ class Player:
         self.playing = True
         if not self.master_loop_recorded:
             self.master_loop_recorded = True
-            log.info(f'recorded master loop', chunks=len(self.master_loop_chunks))
+            loop_duration_s = len(self.master_loop_chunks) * self.config.chunk_length_ms / 1000
+            log.info(f'recorded master loop', 
+                chunks=len(self.master_loop_chunks),
+                loop_duration_s=loop_duration_s)
         else:   
-            log.info(f'overdub stopped', chunks=len(self.master_loop_chunks))
+            log.info(f'overdub stopped')
         self.pinout.record_red_led.off()
         self.pinout.play_green_led.on()
 

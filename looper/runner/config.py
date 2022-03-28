@@ -31,5 +31,5 @@ class Config:
 
 
     @property
-    def buffer_length_ms(self) -> float:
+    def chunk_length_ms(self) -> float:
         return 1000 * self.chunk_size / self.sampling_rate
