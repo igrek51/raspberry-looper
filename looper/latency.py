@@ -21,7 +21,7 @@ def measure_latency():
     silence = np.zeros(chunk, dtype=np.int16)
     amplitude = 32767
 
-    log.info(f"one buffer length: {config.buffer_length_ms}ms")
+    log.info(f"one buffer length: {config.chunk_length_ms}ms")
 
     sine_frequency = 440
     sine_sample_frequency = sine_frequency / config.sampling_rate
