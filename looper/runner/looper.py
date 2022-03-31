@@ -32,11 +32,11 @@ class Looper:
         self.phase = LoopPhase.VOID
         self.current_position = 0
         self.master_chunks = []
-        self.tracks = []
+        tracks = []
         for track_idx in range(self.config.tracks_num):
             track = Track(track_idx, self.config)
-            self.tracks.append(track)
-        self.update_leds()
+            tracks.append(track)
+        self.tracks = tracks
 
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
@@ -79,6 +79,7 @@ class Looper:
         self.loop_stream.start_stream()
 
         self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
+        self.update_leds()
 
         for track in self.tracks:
             self.pinout.on_button_click(
@@ -117,47 +118,73 @@ class Looper:
             self.current_position = 0
 
     def toggle_record(self, track_idx: int):
-        if self.recording:
-            self.stop_recording(track_idx)
-        else:
+        if self.phase == LoopPhase.VOID:
             self.start_recording(track_idx)
+        elif self.phase == LoopPhase.RECORDING_MASTER:
+            self.stop_recording(track_idx)
+        elif self.phase == LoopPhase.LOOP:
+            if self.tracks[track_idx].recording:
+                self.stop_recording(track_idx)
+            else:
+                self.start_recording(track_idx)
 
     def start_recording(self, track_idx: int):
-        self.recording = True
-        if not self.master_loop_recorded:
-            self.current_position = 0
-            self.playing = False
+        if self.phase == LoopPhase.VOID:
+            if track_idx != 0:
+                log.warn('master loop has to be recorded on first track')
+                return
+            
+            self.master_chunks = []
+            self.phase = LoopPhase.RECORDING_MASTER
             log.debug('recording master loop...')
-        else:
-            self.playing = True
-            log.debug('overdubbing...')
+
+        elif self.phase == LoopPhase.LOOP:
+            for track in self.tracks:
+                track.recording = False
+            self.tracks[track_idx].recording = True
+            log.debug('overdubbing track...', track=track_idx)
+
         self.update_leds()
 
     def stop_recording(self, track_idx: int):
-        self.current_position = 0
-        self.recording = False
-        self.playing = True
-        if not self.master_loop_recorded:
-            self.master_loop_recorded = True
-            loop_duration_s = len(self.master_loop_chunks) * self.config.chunk_length_s
+        if self.phase == LoopPhase.RECORDING_MASTER:
+            if track_idx != 0:
+                log.warn('master loop has to be recorded on first track')
+                return
+            
+            self.current_position = 0
+            self.phase = LoopPhase.LOOP
+            for track in self.tracks:
+                if track.index == 0:
+                    track.playing = True
+                    track.set_track(self.master_chunks)
+                else:
+                    track.set_empty(len(self.master_chunks))
+
+            loop_duration_s = len(self.master_chunks) * self.config.chunk_length_s
             log.info(f'recorded master loop', 
-                chunks=len(self.master_loop_chunks),
+                chunks=len(self.master_chunks),
                 loop_duration_s=loop_duration_s)
-        else:   
-            log.info(f'overdub stopped')
+        
+        elif self.phase == LoopPhase.LOOP:
+            self.tracks[track_idx].recording = False
+            log.info(f'overdub stopped', track=track_idx)
+
         self.update_leds()
 
     def toggle_play(self, track_idx: int):
-        self.tracks[track_idx].toggle_playing()
+        self.tracks[track_idx].toggle_play()
         self.update_leds()
 
     def reset_track(self, track_idx: int):
-        self.tracks[track_idx].reset()
+        self.tracks[track_idx].clear()
+        if all(track.empty for track in self.tracks):
+            self.reset()
         self.update_leds()
 
     def update_leds(self):
         for track in self.tracks:
-            if track.recording:
+            if track.recording or (self.phase == LoopPhase.RECORDING_MASTER and track.index == 0):
                 self.pinout.record_leds[track.index].on()
             else:
                 self.pinout.record_leds[track.index].off()

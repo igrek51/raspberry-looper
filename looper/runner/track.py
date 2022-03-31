@@ -1,16 +1,10 @@
-import asyncio
 from dataclasses import dataclass, field
 from typing import List
-import time
 
-from nuclear.sublog import log
-from nuclear.utils.shell import shell
-import pyaudio
 import numpy as np
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
-from looper.runner.pinout import Pinout
 
 
 @dataclass
@@ -32,8 +26,11 @@ class Track:
         self.loop_chunks = chunks
         self.empty = False
 
-    def toggle_playing(self):
-        self.playing = not self.playing
+    def toggle_play(self):
+        if self.playing:
+            self.playing = False
+        elif not self.empty:
+            self.playing = True
 
     def clear(self):
         self.recording = False
