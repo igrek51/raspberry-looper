@@ -1,8 +1,11 @@
-from nuclear.sublog import log
-from looper.runner.config import Config
+import time
 
+from nuclear.sublog import log
+from nuclear.utils.shell import shell
+
+from looper.runner.config import Config
 from looper.runner.pinout import Pinout
-from looper.runner.player import Player
+from looper.runner.looper import Looper
 
 
 def run_looper():
@@ -17,5 +20,16 @@ def run_looper():
         out_device=config.out_device,
         channels=config.channels,
     )
-    player = Player(pinout, config)
+    player = Looper(pinout, config)
+
+    pinout.shutdown_button.when_held = lambda: shutdown(player)
+    
     player.run()
+
+
+def shutdown(player: Looper):
+    log.info('shutting down...')
+    player.close()
+    player.pinout.loopback_led.blink(on_time=0.04, off_time=0.04)
+    time.sleep(0.5)
+    shell('sudo shutdown -h now')
