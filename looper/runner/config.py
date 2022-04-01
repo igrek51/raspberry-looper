@@ -14,6 +14,9 @@ class Config:
     # Sampling size and format, bit depth (16-bit)
     format = pyaudio.paInt16
 
+    # size (in bytes) for the sample format, see pa.get_sample_size(config.format)
+    format_bytes: int = 2
+
     # index of input device
     in_device: int = 1
 

@@ -29,3 +29,6 @@ jupyter:
 
 pull-notebooks:
 	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/
+
+test:
+	cd tests && python -m pytest -vv --tb=short -ra $(test)
