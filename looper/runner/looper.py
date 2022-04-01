@@ -80,23 +80,34 @@ class Looper:
 
         self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
         self.update_leds()
-
-        for track in self.tracks:
-            self.pinout.on_button_click(
-                self.pinout.record_buttons[track.index],
-                on_click=lambda: self.toggle_record(track.index),
-            )
-            self.pinout.on_button_click_and_hold(
-                self.pinout.play_buttons[track.index],
-                on_click=lambda: self.toggle_play(track.index),
-                on_hold=lambda: self.reset_track(track.index),
-            )
+        self.bind_buttons()
 
         log.info('Ready to work')
         try:
             asyncio.run(self.main_loop())
         except KeyboardInterrupt:
             self.close()
+    
+    def bind_buttons(self):
+        for track in self.tracks:
+            def _toggle_record(track_index: int):
+                return lambda: self.toggle_record(track_index)
+
+            def _toggle_play(track_index: int):
+                return lambda: self.toggle_play(track_index)
+                
+            def _reset_track(track_index: int):
+                return lambda: self.reset_track(track_index)
+
+            self.pinout.on_button_click(
+                self.pinout.record_buttons[track.index],
+                on_click=_toggle_record(track.index),
+            )
+            self.pinout.on_button_click_and_hold(
+                self.pinout.play_buttons[track.index],
+                on_click=_toggle_play(track.index),
+                on_hold=_reset_track(track.index),
+            )
 
     def current_playback(self, input_chunk: np.array) -> np.array:
         active_chunks = [track.loop_chunks[self.current_position]
@@ -109,7 +120,7 @@ class Looper:
     def overdub(self, input_chunk: np.array):
         for track in self.tracks:
             if track.recording:
-                track.loop_chunks[self.current_position] += input_chunk
+                track.overdub(input_chunk, self.current_position)
                 break
 
     def next_chunk(self):
@@ -131,7 +142,7 @@ class Looper:
     def start_recording(self, track_idx: int):
         if self.phase == LoopPhase.VOID:
             if track_idx != 0:
-                log.warn('master loop has to be recorded on first track')
+                log.warn('master loop has to be recorded on first track', track_idx=track_idx)
                 return
             
             self.master_chunks = []
@@ -149,7 +160,7 @@ class Looper:
     def stop_recording(self, track_idx: int):
         if self.phase == LoopPhase.RECORDING_MASTER:
             if track_idx != 0:
-                log.warn('master loop has to be recorded on first track')
+                log.warn('master loop has to be recorded on first track', track_idx=track_idx)
                 return
             
             self.current_position = 0
@@ -164,11 +175,12 @@ class Looper:
             loop_duration_s = len(self.master_chunks) * self.config.chunk_length_s
             log.info(f'recorded master loop', 
                 chunks=len(self.master_chunks),
-                loop_duration_s=loop_duration_s)
+                loop_duration_s=round(loop_duration_s, 2))
         
         elif self.phase == LoopPhase.LOOP:
             self.tracks[track_idx].recording = False
-            log.info(f'overdub stopped', track=track_idx)
+            self.tracks[track_idx].playing = True
+            log.info('overdub stopped', track=track_idx)
 
         self.update_leds()
 
@@ -178,8 +190,11 @@ class Looper:
 
     def reset_track(self, track_idx: int):
         self.tracks[track_idx].clear()
+        self.pinout.record_leds[track_idx].blink(on_time=0.1, off_time=0.1, n=2, background=False)
+        log.info('track cleared', track=track_idx)
         if all(track.empty for track in self.tracks):
             self.reset()
+            log.info('all tracks reset, looper void')
         self.update_leds()
 
     def update_leds(self):

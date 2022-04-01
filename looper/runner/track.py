@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import List
 
 import numpy as np
+from nuclear.sublog import log
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
@@ -26,11 +27,18 @@ class Track:
         self.loop_chunks = chunks
         self.empty = False
 
+    def overdub(self, input_chunk: np.array, position: int):
+        self.loop_chunks[position] = self.loop_chunks[position] + input_chunk
+        self.empty = False
+
     def toggle_play(self):
         if self.playing:
             self.playing = False
-        elif not self.empty:
-            self.playing = True
+        else:
+            if self.empty:
+                log.warn('cannot start playing empty track', track_idx=self.index)
+            else:
+                self.playing = True
 
     def clear(self):
         self.recording = False

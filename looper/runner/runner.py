@@ -15,7 +15,7 @@ def run_looper():
     log.info('Config loaded', 
         sampling_rate=f'{config.sampling_rate}Hz',
         chunk_size=f'{config.chunk_size} samples',
-        chunk_length=f'{config.chunk_length_ms}ms',
+        chunk_length=f'{round(config.chunk_length_ms, 2)}ms',
         in_device=config.in_device,
         out_device=config.out_device,
         channels=config.channels,
