@@ -115,7 +115,9 @@ class Looper:
                          if track.playing]
         if len(active_chunks) == 0:
             return input_chunk
-        return np.sum(active_chunks) + input_chunk
+        if len(active_chunks) == 1:
+            return active_chunks[0] + input_chunk
+        return sum(active_chunks) + input_chunk
 
     def overdub(self, input_chunk: np.array):
         for track in self.tracks:
@@ -175,7 +177,7 @@ class Looper:
             loop_duration_s = len(self.master_chunks) * self.config.chunk_length_s
             log.info(f'recorded master loop', 
                 chunks=len(self.master_chunks),
-                loop_duration_s=round(loop_duration_s, 2))
+                loop_duration=f'{round(loop_duration_s, 2)}s')
         
         elif self.phase == LoopPhase.LOOP:
             self.tracks[track_idx].recording = False
