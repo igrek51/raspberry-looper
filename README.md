@@ -48,7 +48,18 @@ On the host:
 
 On Raspberry Pi:
 
-9. Run `looper run` in `~/looper`.
+9. Run `looper run`.
+
+10. (Optional) Add looper to autostart:
+```bash
+mkdir -p /home/pi/.config/autostart
+cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
+[Desktop Entry] 
+Type=Application
+Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
+EOF
+```
+Watch logs with `less -R /home/pi/looper/looper.log`
 
 ## List input devices
 To find out what is your device index:
