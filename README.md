@@ -40,17 +40,15 @@ On the Raspberry Pi:
     - Speaker Volume to 100% (0 dB),
     - Capture Mic Volume to 13% (0 dB).
 
-7. Comment out `load-module module-suspend-on-idle` in `/etc/pulse/default.pa`.
-
 On the host:
 
-8. Run `make push-first` to push source code.
+7. Run `make push-first` to push source code.
 
 On Raspberry Pi:
 
-9. Run `looper run`.
+8. Run `looper run`.
 
-10. (Optional) Add looper to autostart:
+9. (Optional) Add looper to autostart:
 ```bash
 mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop

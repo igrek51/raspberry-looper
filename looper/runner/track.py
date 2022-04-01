@@ -43,5 +43,4 @@ class Track:
     def clear(self):
         self.recording = False
         self.playing = False
-        self.empty = True
-        self.loop_chunks = []
+        self.set_empty(len(self.loop_chunks))
