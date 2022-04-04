@@ -2,9 +2,12 @@ import time
 import threading
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from nuclear.sublog import log
+from looper.runner.api import setup_looper_endpoints
+
+from looper.runner.looper import Looper
 
 
 class Server(uvicorn.Server):
@@ -24,15 +27,15 @@ class Server(uvicorn.Server):
         log.debug("HTTP server stopped")
 
 
-def start_api() -> Server:
-    fastapi_app = creat_fastapi_app()
+def start_api(looper: Looper) -> Server:
+    fastapi_app = creat_fastapi_app(looper)
     config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=8000, log_level="debug")
     server = Server(config=config)
     server.start()
     return server
 
 
-def creat_fastapi_app() -> FastAPI:
+def creat_fastapi_app(looper: Looper) -> FastAPI:
     app = FastAPI()
     app.add_middleware(
         CORSMiddleware,
@@ -45,5 +48,7 @@ def creat_fastapi_app() -> FastAPI:
     @app.get("/")
     async def home():
         return {"status": "ok"}
+
+    setup_looper_endpoints(app, looper)
 
     return app

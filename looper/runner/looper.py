@@ -33,8 +33,8 @@ class Looper:
         self.current_position = 0
         self.master_chunks = []
         tracks = []
-        for track_idx in range(self.config.tracks_num):
-            track = Track(track_idx, self.config)
+        for track_id in range(self.config.tracks_num):
+            track = Track(track_id, self.config)
             tracks.append(track)
         self.tracks = tracks
 
@@ -127,24 +127,24 @@ class Looper:
         if self.current_position >= len(self.master_chunks):
             self.current_position = 0
 
-    def toggle_record(self, track_idx: int):
+    def toggle_record(self, track_id: int):
         if self.phase == LoopPhase.VOID:
-            if track_idx != 0:
-                log.warn('master loop has to be recorded on first track', track_idx=track_idx)
+            if track_id != 0:
+                log.warn('master loop has to be recorded on first track', track_id=track_id)
                 return
             self.start_recording_master()
 
         elif self.phase == LoopPhase.RECORDING_MASTER:
-            if track_idx != 0:
-                log.warn('master loop has to be stopped on first track', track_idx=track_idx)
+            if track_id != 0:
+                log.warn('master loop has to be stopped on first track', track_id=track_id)
                 return
             self.stop_recording_master()
 
         elif self.phase == LoopPhase.LOOP:
-            if self.tracks[track_idx].recording:
-                self.stop_recording(track_idx)
+            if self.tracks[track_id].recording:
+                self.stop_recording(track_id)
             else:
-                self.start_recording(track_idx)
+                self.start_recording(track_id)
         
         self.update_leds()
 
@@ -168,29 +168,29 @@ class Looper:
             chunks=len(self.master_chunks),
             loop_duration=f'{round(loop_duration_s, 2)}s')
 
-    def start_recording(self, track_idx: int):
+    def start_recording(self, track_id: int):
         if self.phase != LoopPhase.LOOP:
             return
         for track in self.tracks:
             track.recording = False
-        self.tracks[track_idx].recording = True
-        log.debug('overdubbing track...', track=track_idx)
+        self.tracks[track_id].recording = True
+        log.debug('overdubbing track...', track=track_id)
 
-    def stop_recording(self, track_idx: int):
+    def stop_recording(self, track_id: int):
         if self.phase != LoopPhase.LOOP:
             return
-        self.tracks[track_idx].recording = False
-        self.tracks[track_idx].playing = True
-        log.info('overdub stopped', track=track_idx)
+        self.tracks[track_id].recording = False
+        self.tracks[track_id].playing = True
+        log.info('overdub stopped', track=track_id)
 
-    def toggle_play(self, track_idx: int):
-        self.tracks[track_idx].toggle_play()
+    def toggle_play(self, track_id: int):
+        self.tracks[track_id].toggle_play()
         self.update_leds()
 
-    def reset_track(self, track_idx: int):
-        self.tracks[track_idx].clear()
-        self.pinout.record_leds[track_idx].blink(on_time=0.1, off_time=0.1, n=2, background=False)
-        log.info('track cleared', track=track_idx)
+    def reset_track(self, track_id: int):
+        self.tracks[track_id].clear()
+        self.pinout.record_leds[track_id].blink(on_time=0.1, off_time=0.1, n=2, background=False)
+        log.info('track cleared', track=track_id)
         if all(track.empty for track in self.tracks):
             self.reset()
             log.info('all tracks reset, looper void')

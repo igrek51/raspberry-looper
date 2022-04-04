@@ -37,7 +37,7 @@ def run_looper():
     if config.online:
         pinout.shutdown_button.when_held = lambda: shutdown(looper)
 
-    server = start_api()
+    server = start_api(looper)
 
     log.info('Ready to work')
     try:
