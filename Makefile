@@ -22,7 +22,7 @@ push:
 	scp -r looper Makefile pi:/home/pi/looper/
 
 run:
-	looper wire
+	looper run
 
 jupyter:
 	jupyter lab --ip=0.0.0.0 --port=8080

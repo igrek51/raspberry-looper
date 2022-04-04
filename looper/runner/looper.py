@@ -81,12 +81,6 @@ class Looper:
         self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
         self.update_leds()
         self.bind_buttons()
-
-        log.info('Ready to work')
-        try:
-            asyncio.run(self.main_loop())
-        except KeyboardInterrupt:
-            self.close()
     
     def bind_buttons(self):
         for track in self.tracks:
@@ -217,21 +211,15 @@ class Looper:
         if self.phase != LoopPhase.LOOP:
             self.pinout.progress_led.off()
 
-    async def main_loop(self):
-        await asyncio.gather(
-            self.progress_loop(),
-        )
+    async def update_progress(self):
+        if self.phase != LoopPhase.LOOP:
+            await asyncio.sleep(0.5)
+            return
 
-    async def progress_loop(self):
-        while True:
-            if self.phase != LoopPhase.LOOP:
-                await asyncio.sleep(0.5)
-                continue
-
-            chunks_left = len(self.master_chunks) - self.current_position
-            chunks_left_s = chunks_left * self.config.chunk_length_s
-            self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
-            await asyncio.sleep(chunks_left_s)
+        chunks_left = len(self.master_chunks) - self.current_position
+        chunks_left_s = chunks_left * self.config.chunk_length_s
+        self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
+        await asyncio.sleep(chunks_left_s)
 
     def close(self):
         log.debug('closing...')
