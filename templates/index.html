@@ -34,7 +34,7 @@
 
         <div class="card">
             <div class="card-header">
-              Looper Tracks
+              Tracks
             </div>
             <div class="card-body">
 
@@ -63,14 +63,32 @@
 
         <div class="card">
             <div class="card-header">
+              Looper
+            </div>
+            <div class="card-body">
+                <p>
+                    Phase: <span id="looper-status-phase"></span>
+                </p>
+                <p>
+                    Position: <span id="looper-status-position"></span>
+                </p>
+                <p>
+                    Loop duration: <span id="looper-status-duration"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
               Output Recorder
             </div>
             <div class="card-body">
-
+                <p>
+                    Recording: <span id="recorder-status-saving"></span>
+                </p>
                 <p>
                     <button type="button" class="btn btn-danger" id="btn-save-output">Save output</button>
                 </p>
-
             </div>
         </div>
 
@@ -135,11 +153,29 @@ $(document).ready(function() {
         });
     });
 
+    $("#btn-save-output").click(function () {
+        console.log('record output');
+        $.ajax({
+            url: '/api/recorder/toggle',
+            type: 'post',
+            data: {},
+            cache: false,
+            success: function(data) {
+                refreshOutputRecorderStatus();
+            },
+            error: function (xhr, status, error) {
+                showAlert('Error: ' + error, 'danger');
+            }
+        });
+    });
+
     refreshAll();
 });
 
 function refreshAll() {
     refreshTracks();
+    refreshLooperStatus();
+    refreshOutputRecorderStatus();
 }
 
 function refreshTracks() {
@@ -161,6 +197,38 @@ function refreshTrack(trackId) {
             updateElementClass("#label-track-"+trackId+"-recording", recording, "bg-danger", "bg-secondary text-decoration-line-through");
             updateElementClass("#label-track-"+trackId+"-playing", playing, "bg-success", "bg-secondary text-decoration-line-through");
             updateElementClass("#label-track-"+trackId+"-nonempty", nonempty, "bg-warning text-dark", "bg-secondary text-decoration-line-through");
+        },
+        error: function (xhr, status, error) {
+            showAlert('Error: ' + error, 'danger');
+        }
+    });
+}
+
+function refreshLooperStatus() {
+    $.ajax({
+        url: '/api/player',
+        type: 'get',
+        data: {},
+        cache: false,
+        success: function(data) {
+            $("#looper-status-phase").html(data.phase);
+            $("#looper-status-position").html(data.position);
+            $("#looper-status-duration").html(data.loop_duration);
+        },
+        error: function (xhr, status, error) {
+            showAlert('Error: ' + error, 'danger');
+        }
+    });
+}
+
+function refreshOutputRecorderStatus() {
+    $.ajax({
+        url: '/api/recorder',
+        type: 'get',
+        data: {},
+        cache: false,
+        success: function(data) {
+            $("#recorder-status-saving").html(data.saving.toString());
         },
         error: function (xhr, status, error) {
             showAlert('Error: ' + error, 'danger');

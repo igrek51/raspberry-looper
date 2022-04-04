@@ -33,15 +33,21 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
         looper.reset_track(track_id)
 
 
-    @app.post("/api/save/start")
+    @app.get("/api/recorder")
+    async def get_output_recorder_status():
+        return {
+            'saving': looper.saver.saving,
+        }
+
+    @app.post("/api/recorder/start")
     async def start_saving_output_to_file():
         looper.saver.start_saving()
 
-    @app.post("/api/save/stop")
+    @app.post("/api/recorder/stop")
     async def stop_saving_output_to_file():
         looper.saver.stop_saving()
 
-    @app.post("/api/save")
+    @app.post("/api/recorder/toggle")
     async def toggle_saving_output_to_file():
         looper.saver.toggle_saving()
 
