@@ -37,6 +37,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def stop_saving_output_to_file():
         looper.saver.stop_saving()
 
+    @app.post("/save")
+    async def toggle_saving_output_to_file():
+        looper.saver.toggle_saving()
+
 
 
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:
