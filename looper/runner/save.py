@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import datetime
 import os
-from typing import Callable, Optional
+from typing import Callable, List, Optional, Tuple
 from pathlib import Path
 import threading
 
@@ -52,6 +52,14 @@ def save_mp3(filename: str, frames_channel: Callable, config: Config):
     filesize_mb = os.path.getsize(filename) / 1024 / 1024
     log.info('MP3 file saved', filename=filename, 
         duration=f'{track.duration_seconds:.2f}s', size=f'{filesize_mb:.2f}MB')
+
+
+@dataclass
+class Recording:
+    name: str
+    path: Path
+    link: str
+    filesize_mb: float
 
 
 @dataclass
@@ -127,3 +135,17 @@ class OutputSaver:
             if self.wav is not None:
                 self.wav.writeframes(b''.join(chunk))
                 self.chunks_written += 1
+
+    @property
+    def recorded_duration(self) -> float:
+        if not self.saving:
+            return 0
+        return self.chunks_written * self.config.chunk_length_s
+
+    def list_recordings(self) -> List[Recording]:
+        recordings = []
+        dirpath = Path(self.config.output_recordings_dir)
+        for path in dirpath.glob('*.mp3'):
+            filesize_mb = os.path.getsize(path) / 1024 / 1024
+            recordings.append(Recording(path.stem, path, str(path), filesize_mb))
+        return sorted(recordings, key=lambda r: r.name)

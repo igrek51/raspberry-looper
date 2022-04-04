@@ -11,7 +11,7 @@
 <main>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
+        <div class="container-md">
             <span class="navbar-brand mb-0 h1">RaspberryLooper</span>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,7 +20,10 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="/">Status</a>
+                        <a class="nav-link" href="/looper">Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/recordings">Recording</a>
                     </li>
                 </ul>
             </div>
@@ -85,6 +88,9 @@
             <div class="card-body">
                 <p>
                     Recording: <span id="recorder-status-saving"></span>
+                </p>
+                <p>
+                    Duration: <span id="recorder-status-duration"></span>
                 </p>
                 <p>
                     <button type="button" class="btn btn-danger" id="btn-save-output">Save output</button>
@@ -229,6 +235,7 @@ function refreshOutputRecorderStatus() {
         cache: false,
         success: function(data) {
             $("#recorder-status-saving").html(data.saving.toString());
+            $("#recorder-status-duration").html(data.recorded_duration.toString() + 's');
         },
         error: function (xhr, status, error) {
             showAlert('Error: ' + error, 'danger');

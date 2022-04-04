@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Raspberry Looper</title>
+    <link href="{{ url_for('static', path='/bootstrap.min.css') }}" rel="stylesheet">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+<body class="d-flex flex-column h-100">
+<main>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-md">
+            <span class="navbar-brand mb-0 h1">RaspberryLooper</span>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/looper">Status</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/recordings">Recording</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+
+    <div id="alerts-placeholder"></div>
+
+    <div class="container">
+
+        <div class="card">
+            <div class="card-header">
+              Recordings
+            </div>
+            <div class="card-body">
+
+                <ul>
+                    {% for recording in recordings %}
+                    <li>
+                        <a href="{{recording.link}}" target="_blank">{{recording.name}}</a> - {{recording.filesize_mb | round(3)}} MB
+                    </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<script src="{{ url_for('static', path='/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', path='/bootstrap.bundle.min.js') }}"></script>
+
+</body>
+</html>
