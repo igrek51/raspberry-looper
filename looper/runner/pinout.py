@@ -28,6 +28,7 @@ class Pinout:
 
         self.init_leds()
 
+
     def init_leds(self):
         self.loopback_led.on()
         self.progress_led.off()

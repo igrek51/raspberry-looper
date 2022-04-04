@@ -1,15 +1,16 @@
 import os
-from typing import Callable
+from typing import Callable, Optional
 from pathlib import Path
 
 import wave
+import numpy as np
 from pydub import AudioSegment
 
 from looper.runner.config import Config
 from nuclear.sublog import log
 
 
-def save_wav(filename: str, frames_channel: Callable, config: Config):
+def save_wav(filename: str, frames_channel: Callable[[], Optional[np.array]], config: Config):
     log.debug('Saving frames to WAV file', filename=filename)
 
     Path(filename).parent.mkdir(exist_ok=True, parents=True)

@@ -64,6 +64,9 @@ class Looper:
                 self.next_chunk()
                 return out_chunk, pyaudio.paContinue
 
+        if self.config.offline:
+            return
+
         self.loop_stream = self.pa.open(
             format=self.config.format,
             channels=self.config.channels,
@@ -223,8 +226,9 @@ class Looper:
 
     def close(self):
         log.debug('closing...')
-        self.pinout.init_leds()
-        self.loop_stream.stop_stream()
-        self.loop_stream.close()
+        if self.config.online:
+            self.pinout.init_leds()
+            self.loop_stream.stop_stream()
+            self.loop_stream.close()
         self.pa.terminate()
         log.info('Stream closed')

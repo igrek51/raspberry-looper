@@ -34,6 +34,9 @@ class Config:
 
     tracks_num: int = 2
 
+    # Offline mode - without Raspberry Pi pins nor audio devices
+    offline: bool = False
+
 
     @property
     def chunk_length_ms(self) -> float:
@@ -46,3 +49,7 @@ class Config:
     @property
     def max_loop_chunks(self) -> int:
         return self.max_loop_duration_s // self.chunk_length_s
+
+    @property
+    def online(self) -> bool:
+        return not self.offline
