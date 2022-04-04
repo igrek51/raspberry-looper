@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+import datetime
 import os
 from typing import Callable, Optional
 from pathlib import Path
@@ -47,3 +49,64 @@ def save_mp3(filename: str, frames_channel: Callable, config: Config):
     filesize_mb = os.path.getsize(filename) / 1024 / 1024
     log.info('MP3 file saved', filename=filename, 
         duration=f'{track.duration_seconds:.2f}s', size=f'{filesize_mb:.2f}MB')
+
+
+@dataclass
+class LoopSaver:
+    config: Config
+    saving: bool = False
+    chunks_written: int = 0
+
+    def start_saving(self):
+        if self.saving:
+            log.warn('Already saving')
+            return
+
+        self.filestem = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        self.wav_path = Path(self.config.records_dir) / f'{self.filestem}.wav'
+
+        log.debug('creating WAV file', path=self.wav_path)
+        Path(self.wav_path).parent.mkdir(exist_ok=True, parents=True)
+
+        self.wav = wave.open(str(self.wav_path), 'w')
+        self.wav.setnchannels(self.config.channels)
+        self.wav.setsampwidth(self.config.format_bytes)
+        self.wav.setframerate(self.config.sampling_rate)
+
+        self.chunks_written = 0
+        self.saving = True
+        log.info('Started saving output to a file')
+
+    def stop_saving(self):
+        if not self.saving:
+            log.warn('Already not saving')
+            return
+
+        self.saving = False
+
+        self.wav.close()
+        duration = self.chunks_written * self.config.chunk_length_s
+        filesize_mb = os.path.getsize(self.wav_path) / 1024 / 1024
+        log.debug('WAV file saved', 
+            filename=self.wav_path, 
+            chunks_saved=self.chunks_written,
+            duration=f'{duration:.2f}s',
+            size=f'{filesize_mb:.2f}MB')
+
+        mp3_path = Path(self.config.records_dir) / f'{self.filestem}.mp3'
+
+        audio = AudioSegment.from_wav(str(self.wav_path))
+        audio.export(str(mp3_path), format='mp3')
+
+        self.wav_path.unlink()
+
+        filesize_mb = os.path.getsize(mp3_path) / 1024 / 1024
+        log.info('output converted to MP3', filename=mp3_path, 
+            duration=f'{audio.duration_seconds:.2f}s', size=f'{filesize_mb:.2f}MB')
+
+    def transmit(self, chunk: np.array):
+        if not self.saving:
+            return
+        
+        self.wav.writeframes(b''.join(chunk))
+        self.chunks_written += 1

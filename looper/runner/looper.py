@@ -9,6 +9,7 @@ import numpy as np
 
 from looper.runner.config import Config
 from looper.runner.pinout import Pinout
+from looper.runner.save import LoopSaver, LoopSaver
 from looper.runner.track import Track
 
 
@@ -28,6 +29,10 @@ class Looper:
     master_chunks: List[np.array] = field(default_factory=list)
     tracks: List[Track] = field(default_factory=list)
 
+    @property
+    def master_chunks_length(self) -> int:
+        return len(self.master_chunks)
+
     def reset(self):
         self.phase = LoopPhase.VOID
         self.current_position = 0
@@ -42,18 +47,21 @@ class Looper:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
         self.reset()
+        self.saver = LoopSaver(self.config)
 
         def stream_callback(in_data, frame_count, time_info, status_flags):
             input_chunk = np.frombuffer(in_data, dtype=np.int16)
 
             # just listening to the input
             if self.phase == LoopPhase.VOID:
+                self.saver.transmit(input_chunk)
                 return input_chunk, pyaudio.paContinue
 
             # Recording master loop
             if self.phase == LoopPhase.RECORDING_MASTER:
                 if self.master_chunks_length < self.config.max_loop_chunks:
                     self.master_chunks.append(input_chunk)
+                self.saver.transmit(input_chunk)
                 return input_chunk, pyaudio.paContinue
 
             # Loop playback + Overdub
@@ -62,6 +70,7 @@ class Looper:
                 out_chunk = self.current_playback(input_chunk)
                 self.overdub(input_chunk)
                 self.next_chunk()
+                self.saver.transmit(out_chunk)
                 return out_chunk, pyaudio.paContinue
 
         if self.config.offline:
@@ -223,11 +232,7 @@ class Looper:
         chunks_left_s = chunks_left * self.config.chunk_length_s
         self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
         await asyncio.sleep(chunks_left_s)
-
-    @property
-    def master_chunks_length(self) -> int:
-        return len(self.master_chunks)
-
+    
     def close(self):
         log.debug('closing...')
         if self.config.online:

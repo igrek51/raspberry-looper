@@ -37,6 +37,8 @@ class Config:
     # Offline mode - without Raspberry Pi pins nor audio devices
     offline: bool = False
 
+    records_dir: str = "out/recordings"
+
 
     @property
     def chunk_length_ms(self) -> float:

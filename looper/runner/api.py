@@ -11,6 +11,7 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def get_player_status():
         return await _get_player_status(looper)
 
+
     @app.get("/track")
     async def get_all_tracks_status():
         return [item async for item in _get_all_tracks_info(looper)]
@@ -26,6 +27,15 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     @app.post("/track/{track_id}/play")
     async def toggle_track_playing(track_id: int):
         looper.toggle_play(track_id)
+
+
+    @app.post("/save/start")
+    async def start_saving_output_to_file():
+        looper.saver.start_saving()
+
+    @app.post("/save/stop")
+    async def stop_saving_output_to_file():
+        looper.saver.stop_saving()
 
 
 
