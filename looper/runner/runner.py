@@ -5,7 +5,7 @@ from nuclear.sublog import log
 from nuclear.utils.shell import shell
 from gpiozero import BadPinFactory
 
-from looper.runner.server import start_api
+from looper.runner.server import Server, start_api
 from looper.runner.config import Config
 from looper.runner.pinout import Pinout
 from looper.runner.looper import Looper
@@ -37,7 +37,7 @@ def run_looper():
     if config.online:
         pinout.shutdown_button.when_held = lambda: shutdown(looper)
 
-    server = start_api(looper)
+    server: Server = start_api(looper)
 
     log.info('Ready to work')
     try:

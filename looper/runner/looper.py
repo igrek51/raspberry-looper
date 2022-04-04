@@ -9,7 +9,7 @@ import numpy as np
 
 from looper.runner.config import Config
 from looper.runner.pinout import Pinout
-from looper.runner.save import OutputSaver, LoopSaver
+from looper.runner.save import OutputSaver
 from looper.runner.track import Track
 
 
@@ -30,8 +30,12 @@ class Looper:
     tracks: List[Track] = field(default_factory=list)
 
     @property
-    def master_chunks_length(self) -> int:
+    def loop_chunks_num(self) -> int:
         return len(self.master_chunks)
+        
+    @property
+    def loop_duration(self) -> float:
+        return len(self.master_chunks) * self.config.chunk_length_s
 
     def reset(self):
         self.phase = LoopPhase.VOID
@@ -60,7 +64,7 @@ class Looper:
 
             # Recording master loop
             if self.phase == LoopPhase.RECORDING_MASTER:
-                if self.master_chunks_length < self.config.max_loop_chunks:
+                if self.loop_chunks_num < self.config.max_loop_chunks:
                     self.master_chunks.append(input_chunk)
                 self.saver.transmit(input_chunk)
                 return input_chunk, pyaudio.paContinue
@@ -135,7 +139,7 @@ class Looper:
 
     def next_chunk(self):
         self.current_position += 1
-        if self.current_position >= self.master_chunks_length:
+        if self.current_position >= self.loop_chunks_num:
             self.current_position = 0
 
     def toggle_record(self, track_id: int):
@@ -172,11 +176,11 @@ class Looper:
                 track.playing = True
                 track.set_track(self.master_chunks)
             else:
-                track.set_empty(self.master_chunks_length)
+                track.set_empty(self.loop_chunks_num)
 
-        loop_duration_s = self.master_chunks_length * self.config.chunk_length_s
+        loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
         log.info(f'recorded master loop', 
-            chunks=self.master_chunks_length,
+            chunks=self.loop_chunks_num,
             loop_duration=f'{round(loop_duration_s, 2)}s')
 
     def start_recording(self, track_id: int):
@@ -231,7 +235,7 @@ class Looper:
             await asyncio.sleep(0.5)
             return
 
-        chunks_left = self.master_chunks_length - self.current_position
+        chunks_left = self.loop_chunks_num - self.current_position
         chunks_left_s = chunks_left * self.config.chunk_length_s
         self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
         await asyncio.sleep(chunks_left_s)

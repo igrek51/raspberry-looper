@@ -2,11 +2,14 @@ import time
 import threading
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from nuclear.sublog import log
-from looper.runner.api import setup_looper_endpoints
 
+from looper.runner.api import setup_looper_endpoints
 from looper.runner.looper import Looper
 
 
@@ -45,9 +48,20 @@ def creat_fastapi_app(looper: Looper) -> FastAPI:
         allow_headers=["*"],
     )
 
-    @app.get("/")
-    async def home():
+    @app.get("/status")
+    async def status():
         return {"status": "ok"}
+
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+
+    templates = Jinja2Templates(directory="templates")
+
+    @app.get("/", response_class=HTMLResponse)
+    async def home_page(request: Request):
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "track_ids": list(range(looper.config.tracks_num)),
+        })
 
     setup_looper_endpoints(app, looper)
 
