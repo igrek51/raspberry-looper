@@ -9,7 +9,7 @@ import numpy as np
 
 from looper.runner.config import Config
 from looper.runner.pinout import Pinout
-from looper.runner.save import LoopSaver, LoopSaver
+from looper.runner.save import OutputSaver, LoopSaver
 from looper.runner.track import Track
 
 
@@ -39,7 +39,8 @@ class Looper:
         self.master_chunks = []
         tracks = []
         for track_id in range(self.config.tracks_num):
-            track = Track(track_id, self.config)
+            has_gpio = track_id < self.config.tracks_gpio_num
+            track = Track(track_id, self.config, has_gpio)
             tracks.append(track)
         self.tracks = tracks
 
@@ -47,7 +48,7 @@ class Looper:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
         self.reset()
-        self.saver = LoopSaver(self.config)
+        self.saver = OutputSaver(self.config)
 
         def stream_callback(in_data, frame_count, time_info, status_flags):
             input_chunk = np.frombuffer(in_data, dtype=np.int16)
@@ -96,24 +97,25 @@ class Looper:
     
     def bind_buttons(self):
         for track in self.tracks:
-            def _toggle_record(track_index: int):
-                return lambda: self.toggle_record(track_index)
+            if track.has_gpio:
+                def _toggle_record(track_index: int):
+                    return lambda: self.toggle_record(track_index)
 
-            def _toggle_play(track_index: int):
-                return lambda: self.toggle_play(track_index)
-                
-            def _reset_track(track_index: int):
-                return lambda: self.reset_track(track_index)
+                def _toggle_play(track_index: int):
+                    return lambda: self.toggle_play(track_index)
+                    
+                def _reset_track(track_index: int):
+                    return lambda: self.reset_track(track_index)
 
-            self.pinout.on_button_click(
-                self.pinout.record_buttons[track.index],
-                on_click=_toggle_record(track.index),
-            )
-            self.pinout.on_button_click_and_hold(
-                self.pinout.play_buttons[track.index],
-                on_click=_toggle_play(track.index),
-                on_hold=_reset_track(track.index),
-            )
+                self.pinout.on_button_click(
+                    self.pinout.record_buttons[track.index],
+                    on_click=_toggle_record(track.index),
+                )
+                self.pinout.on_button_click_and_hold(
+                    self.pinout.play_buttons[track.index],
+                    on_click=_toggle_play(track.index),
+                    on_hold=_reset_track(track.index),
+                )
 
     def current_playback(self, input_chunk: np.array) -> np.array:
         active_chunks = [track.loop_chunks[self.current_position]
@@ -207,18 +209,19 @@ class Looper:
 
     def update_leds(self):
         for track in self.tracks:
-            if track.recording or (self.phase == LoopPhase.RECORDING_MASTER and track.index == 0):
-                self.pinout.record_leds[track.index].on()
-            else:
-                self.pinout.record_leds[track.index].off()
-
-            if track.playing:
-                self.pinout.play_leds[track.index].on()
-            else:
-                if track.empty:
-                    self.pinout.play_leds[track.index].off()
+            if track.has_gpio:
+                if track.recording or (self.phase == LoopPhase.RECORDING_MASTER and track.index == 0):
+                    self.pinout.record_leds[track.index].on()
                 else:
-                    self.pinout.play_leds[track.index].blink(on_time=0.1, off_time=0.9)
+                    self.pinout.record_leds[track.index].off()
+
+                if track.playing:
+                    self.pinout.play_leds[track.index].on()
+                else:
+                    if track.empty:
+                        self.pinout.play_leds[track.index].off()
+                    else:
+                        self.pinout.play_leds[track.index].blink(on_time=0.1, off_time=0.9)
 
         if self.phase != LoopPhase.LOOP:
             self.pinout.progress_led.off()

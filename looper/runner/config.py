@@ -32,12 +32,15 @@ class Config:
 
     max_loop_duration_s: float = 4 * 60
 
-    tracks_num: int = 2
+    # number of available tracks in looper
+    tracks_num: int = 4
+    # number of tracks with buttons and LEDs connected to the board
+    tracks_gpio_num: int = 2
 
     # Offline mode - without Raspberry Pi pins nor audio devices
     offline: bool = False
 
-    records_dir: str = "out/recordings"
+    output_recordings_dir: str = "out/recordings"
 
 
     @property

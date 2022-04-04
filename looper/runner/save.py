@@ -55,10 +55,13 @@ def save_mp3(filename: str, frames_channel: Callable, config: Config):
 
 
 @dataclass
-class LoopSaver:
+class OutputSaver:
     config: Config
     saving: bool = False
     chunks_written: int = 0
+
+    def __post_init__(self):
+        self.wav = None
 
     def start_saving(self):
         if self.saving:
@@ -66,7 +69,7 @@ class LoopSaver:
             return
 
         self.filestem = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        self.wav_path = Path(self.config.records_dir) / f'{self.filestem}.wav'
+        self.wav_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.wav'
 
         log.debug('creating WAV file', path=self.wav_path)
         Path(self.wav_path).parent.mkdir(exist_ok=True, parents=True)
@@ -90,6 +93,7 @@ class LoopSaver:
 
         with lock:
             self.wav.close()
+            self.wav = None
             duration = self.chunks_written * self.config.chunk_length_s
             filesize_mb = os.path.getsize(self.wav_path) / 1024 / 1024
             log.debug('WAV file saved', 
@@ -98,7 +102,7 @@ class LoopSaver:
                 duration=f'{duration:.2f}s',
                 size=f'{filesize_mb:.2f}MB')
 
-            mp3_path = Path(self.config.records_dir) / f'{self.filestem}.mp3'
+            mp3_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.mp3'
 
             audio = AudioSegment.from_wav(str(self.wav_path))
             audio.export(str(mp3_path), format='mp3')
@@ -120,5 +124,6 @@ class LoopSaver:
             return
         
         with lock:
-            self.wav.writeframes(b''.join(chunk))
-            self.chunks_written += 1
+            if self.wav is not None:
+                self.wav.writeframes(b''.join(chunk))
+                self.chunks_written += 1

@@ -12,6 +12,7 @@ from looper.runner.dsp import SignalProcessor
 class Track:
     index: int
     config: Config
+    has_gpio: bool  # has corresponding GPIO buttons/LEDs
 
     recording: bool = False
     playing: bool = False
