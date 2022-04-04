@@ -52,7 +52,7 @@ class Looper:
 
             # Recording master loop
             if self.phase == LoopPhase.RECORDING_MASTER:
-                if len(self.master_chunks) < self.config.max_loop_chunks:
+                if self.master_chunks_length < self.config.max_loop_chunks:
                     self.master_chunks.append(input_chunk)
                 return input_chunk, pyaudio.paContinue
 
@@ -124,7 +124,7 @@ class Looper:
 
     def next_chunk(self):
         self.current_position += 1
-        if self.current_position >= len(self.master_chunks):
+        if self.current_position >= self.master_chunks_length:
             self.current_position = 0
 
     def toggle_record(self, track_id: int):
@@ -161,11 +161,11 @@ class Looper:
                 track.playing = True
                 track.set_track(self.master_chunks)
             else:
-                track.set_empty(len(self.master_chunks))
+                track.set_empty(self.master_chunks_length)
 
-        loop_duration_s = len(self.master_chunks) * self.config.chunk_length_s
+        loop_duration_s = self.master_chunks_length * self.config.chunk_length_s
         log.info(f'recorded master loop', 
-            chunks=len(self.master_chunks),
+            chunks=self.master_chunks_length,
             loop_duration=f'{round(loop_duration_s, 2)}s')
 
     def start_recording(self, track_id: int):
@@ -219,10 +219,14 @@ class Looper:
             await asyncio.sleep(0.5)
             return
 
-        chunks_left = len(self.master_chunks) - self.current_position
+        chunks_left = self.master_chunks_length - self.current_position
         chunks_left_s = chunks_left * self.config.chunk_length_s
         self.pinout.progress_led.pulse(fade_in_time=chunks_left_s, fade_out_time=0, n=1)
         await asyncio.sleep(chunks_left_s)
+
+    @property
+    def master_chunks_length(self) -> int:
+        return len(self.master_chunks)
 
     def close(self):
         log.debug('closing...')

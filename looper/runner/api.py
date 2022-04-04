@@ -7,6 +7,10 @@ from looper.runner.looper import Looper
 
 def setup_looper_endpoints(app: FastAPI, looper: Looper):
 
+    @app.get("/player")
+    async def get_player_status():
+        return await _get_player_status(looper)
+
     @app.get("/track")
     async def get_all_tracks_status():
         return [item async for item in _get_all_tracks_info(looper)]
@@ -42,3 +46,11 @@ async def _get_all_tracks_info(looper: Looper) -> Iterable[Dict]:
             'playing': track.playing,
             'empty': track.empty,
         }
+
+
+async def _get_player_status(looper: Looper) -> Dict:
+    return {
+        'phase': looper.phase.name,
+        'position': looper.current_position,
+        'loop_chunks': looper.master_chunks_length,
+    }
