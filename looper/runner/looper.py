@@ -234,6 +234,16 @@ class Looper:
     def is_recording(self, track_id: int) -> bool:
         return self.tracks[track_id].recording or (self.phase == LoopPhase.RECORDING_MASTER and track_id == 0)
 
+    def add_track(self):
+        track_id = self.config.tracks_num
+        self.config.tracks_num += 1
+        has_gpio = track_id < self.config.tracks_gpio_num
+        track = Track(track_id, self.config, has_gpio)
+        self.tracks.append(track)
+        if self.phase == LoopPhase.LOOP:
+            track.set_empty(self.loop_chunks_num)
+        log.info('new track added', tracks_num=self.config.tracks_num)
+
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:
             await asyncio.sleep(0.5)

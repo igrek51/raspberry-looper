@@ -29,6 +29,8 @@
                 {% endfor %}
             </div>
 
+            <button type="button" class="btn btn-primary" id="btn-add-track">Add track</button>
+
         </div>
     </div>
 
@@ -76,6 +78,7 @@ tracks_num = {{track_ids|length}}
 $(document).ready(function() {
     bindTrackButtons()
     bindRecorderButtons()
+    bindNewTrackButton()
     refreshAllStatus()
 })
 </script>

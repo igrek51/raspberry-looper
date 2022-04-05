@@ -32,6 +32,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def reset_track(track_id: int):
         looper.reset_track(track_id)
 
+    @app.post("/api/track/add")
+    async def add_new_track():
+        return looper.add_track()
+
 
     @app.get("/api/recorder")
     async def get_output_recorder_status():
