@@ -150,7 +150,7 @@ class OutputSaver:
         recordings = []
         dirpath = Path(self.config.output_recordings_dir)
         dirpath.mkdir(exist_ok=True, parents=True)
-        for path in dirpath.glob('*.mp3'):
+        for path in dirpath.glob('*'):
             filesize_mb = os.path.getsize(path) / 1024 / 1024
-            recordings.append(Recording(path.stem, path, str(path), filesize_mb))
+            recordings.append(Recording(path.name, path, str(path), filesize_mb))
         return sorted(recordings, key=lambda r: r.name)

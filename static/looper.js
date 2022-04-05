@@ -65,7 +65,7 @@ function refreshTrack(trackId) {
 function refreshLooperStatus() {
     ajaxRequest('get', '/api/player', function(data) {
         $("#looper-status-phase").html(data.phase)
-        $("#looper-status-position").html(data.position)
+        $("#looper-status-progress").html(data.progress)
         $("#looper-status-duration").html(data.loop_duration)
     })
 }

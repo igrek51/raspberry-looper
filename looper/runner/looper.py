@@ -37,6 +37,12 @@ class Looper:
     def loop_duration(self) -> float:
         return len(self.master_chunks) * self.config.chunk_length_s
 
+    @property
+    def relative_progress(self) -> float:
+        if len(self.master_chunks) == 0:
+            return 0
+        return self.current_position / len(self.master_chunks)
+
     def reset(self):
         self.phase = LoopPhase.VOID
         self.current_position = 0

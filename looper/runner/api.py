@@ -80,6 +80,6 @@ async def _get_all_tracks_info(looper: Looper) -> Iterable[Dict]:
 async def _get_player_status(looper: Looper) -> Dict:
     return {
         'phase': looper.phase.name,
-        'position': looper.current_position,
+        'progress': looper.relative_progress,
         'loop_duration': looper.loop_duration,
     }
