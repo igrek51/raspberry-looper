@@ -2,9 +2,10 @@ import time
 import threading
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from nuclear.sublog import log
 
 from looper.runner.api import setup_looper_endpoints
@@ -55,6 +56,13 @@ def creat_fastapi_app(looper: Looper) -> FastAPI:
 
     app.mount("/static", StaticFiles(directory="static"), name="static")
     app.mount("/out", StaticFiles(directory="out"), name="static_out")
+
+    @app.exception_handler(Exception)
+    async def error_handler(request: Request, exc: Exception):
+        return JSONResponse(
+            status_code=500,
+            content={'error': str(exc)},
+        )
 
     setup_web_views(app, looper)
     setup_looper_endpoints(app, looper)
