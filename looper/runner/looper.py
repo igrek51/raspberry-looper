@@ -193,8 +193,9 @@ class Looper:
         if self.phase != LoopPhase.LOOP:
             return
         for track in self.tracks:
-            track.recording = False
-        self.tracks[track_id].recording = True
+            if track.index != track_id:
+                track.recording = False
+        self.tracks[track_id].start_recording(self.current_position)
         log.debug('overdubbing track...', track=track_id)
 
     def stop_recording(self, track_id: int):
