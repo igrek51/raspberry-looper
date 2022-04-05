@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card">
+        <div class="card-header">
+            Master Loop
+        </div>
+        <div class="card-body">
+
+            <p>
+                <span class="badge bg-secondary text-decoration-line-through" id="label-track-0-recording">Recording</span>
+                <span class="badge bg-secondary text-decoration-line-through" id="label-track-0-playing">Playing</span>
+                <span class="badge bg-secondary text-decoration-line-through" id="label-track-0-nonempty">Non-empty</span>
+            </p>
+
+            <p class="mb-5">
+                <button type="button" class="btn btn-danger button-track-record p-5" id="btn-track-0-record" track-id="0">Record</button>
+            </p>
+            <p class="mb-5">
+                <button type="button" class="btn btn-success button-track-play p-5" id="btn-track-0-play" track-id="0">Play</button>
+            </p>
+            <p class="mb-5">
+                <button type="button" class="btn btn-warning button-track-reset p-5" id="btn-track-0-reset" track-id="0">Reset</button>
+            </p>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+tracks_num = 1
+
+$(document).ready(function() {
+    bindTrackButtons()
+    refreshAllStatus()
+})
+</script>
+{% endblock %}

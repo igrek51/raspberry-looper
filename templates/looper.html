@@ -1,265 +1,82 @@
-<!DOCTYPE html>
-<html lang="en" class="h-100">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Raspberry Looper</title>
-    <link href="{{ url_for('static', path='/bootstrap.min.css') }}" rel="stylesheet">
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
-</head>
-<body class="d-flex flex-column h-100">
-<main>
+{% extends "base.html" %}
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-md">
-            <span class="navbar-brand mb-0 h1">RaspberryLooper</span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/looper">Status</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/recordings">Recording</a>
-                    </li>
-                </ul>
-            </div>
+{% block content %}
+<div class="container">
 
+    <div class="card">
+        <div class="card-header">
+            Tracks
         </div>
-    </nav>
+        <div class="card-body">
 
-    <div id="alerts-placeholder"></div>
-
-    <div class="container">
-
-        <div class="card">
-            <div class="card-header">
-              Tracks
-            </div>
-            <div class="card-body">
-
-                <div class="card-group">
-                    {% for track_id in track_ids %}
-                    <div class="card text-dark bg-light mb-3">
-                        <div class="card-header">Track {{track_id}}</div>
-                        <div class="card-body">
-                            <p>
-                                <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-recording">Recording</span>
-                                <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-playing">Playing</span>
-                                <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-nonempty">Non-empty</span>
-                            </p>
-                            <p>
-                                <button type="button" class="btn btn-danger button-track-record" id="btn-track-{{track_id}}-record" track-id="{{track_id}}">Record</button>
-                                <button type="button" class="btn btn-success button-track-play" id="btn-track-{{track_id}}-play" track-id="{{track_id}}">Play</button>
-                                <button type="button" class="btn btn-warning button-track-reset" id="btn-track-{{track_id}}-reset" track-id="{{track_id}}">Reset</button>
-                            </p>
-                        </div>
+            <div class="card-group">
+                {% for track_id in track_ids %}
+                <div class="card text-dark bg-light mb-3">
+                    <div class="card-header">Track {{track_id}}</div>
+                    <div class="card-body">
+                        <p>
+                            <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-recording">Recording</span>
+                            <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-playing">Playing</span>
+                            <span class="badge bg-secondary text-decoration-line-through" id="label-track-{{track_id}}-nonempty">Non-empty</span>
+                        </p>
+                        <p>
+                            <button type="button" class="btn btn-danger button-track-record me-3 p-2" id="btn-track-{{track_id}}-record" track-id="{{track_id}}">Record</button>
+                            <button type="button" class="btn btn-success button-track-play me-3 p-2" id="btn-track-{{track_id}}-play" track-id="{{track_id}}">Play</button>
+                            <button type="button" class="btn btn-warning button-track-reset me-3 p-2" id="btn-track-{{track_id}}-reset" track-id="{{track_id}}">Reset</button>
+                        </p>
                     </div>
-                    {% endfor %}
                 </div>
-
+                {% endfor %}
             </div>
+
         </div>
-
-        <div class="card">
-            <div class="card-header">
-              Looper
-            </div>
-            <div class="card-body">
-                <p>
-                    Phase: <span id="looper-status-phase"></span>
-                </p>
-                <p>
-                    Position: <span id="looper-status-position"></span>
-                </p>
-                <p>
-                    Loop duration: <span id="looper-status-duration"></span>
-                </p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-              Output Recorder
-            </div>
-            <div class="card-body">
-                <p>
-                    Recording: <span id="recorder-status-saving"></span>
-                </p>
-                <p>
-                    Duration: <span id="recorder-status-duration"></span>
-                </p>
-                <p>
-                    <button type="button" class="btn btn-danger" id="btn-save-output">Save output</button>
-                </p>
-            </div>
-        </div>
-
     </div>
 
-</main>
+    <div class="card">
+        <div class="card-header">
+            Looper
+        </div>
+        <div class="card-body">
+            <p>
+                Phase: <span id="looper-status-phase"></span>
+            </p>
+            <p>
+                Position: <span id="looper-status-position"></span>
+            </p>
+            <p>
+                Loop duration: <span id="looper-status-duration"></span>
+            </p>
+        </div>
+    </div>
 
-<script src="{{ url_for('static', path='/jquery.min.js') }}"></script>
-<script src="{{ url_for('static', path='/bootstrap.bundle.min.js') }}"></script>
+    <div class="card">
+        <div class="card-header">
+            Output Recorder
+        </div>
+        <div class="card-body">
+            <p>
+                Recording: <span id="recorder-status-saving"></span>
+            </p>
+            <p>
+                Duration: <span id="recorder-status-duration"></span>
+            </p>
+            <p>
+                <button type="button" class="btn btn-danger" id="btn-save-output">Save output</button>
+            </p>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-tracks_num = {{track_ids|length}};
+tracks_num = {{track_ids|length}}
 
 $(document).ready(function() {
-    $(".button-track-record").click(function () {
-        var trackId = $(this).attr('track-id');
-        console.log('record track ' + trackId);
-        $.ajax({
-            url: '/api/track/' + trackId + '/record',
-            type: 'post',
-            data: {},
-            cache: false,
-            success: function(data) {
-                refreshTrack(trackId);
-            },
-            error: function (xhr, status, error) {
-                showAlert('Error: ' + error, 'danger');
-            }
-        });
-    });
-
-    $(".button-track-play").click(function () {
-        var trackId = $(this).attr('track-id');
-        console.log('play track ' + trackId);
-        $.ajax({
-            url: '/api/track/' + trackId + '/play',
-            type: 'post',
-            data: {},
-            cache: false,
-            success: function(data) {
-                refreshTrack(trackId);
-            },
-            error: function (xhr, status, error) {
-                showAlert('Error: ' + error, 'danger');
-            }
-        });
-    });
-
-    $(".button-track-reset").click(function () {
-        var trackId = $(this).attr('track-id');
-        console.log('reset track ' + trackId);
-        $.ajax({
-            url: '/api/track/' + trackId + '/reset',
-            type: 'post',
-            data: {},
-            cache: false,
-            success: function(data) {
-                refreshTrack(trackId);
-            },
-            error: function (xhr, status, error) {
-                showAlert('Error: ' + error, 'danger');
-            }
-        });
-    });
-
-    $("#btn-save-output").click(function () {
-        console.log('record output');
-        $.ajax({
-            url: '/api/recorder/toggle',
-            type: 'post',
-            data: {},
-            cache: false,
-            success: function(data) {
-                refreshOutputRecorderStatus();
-            },
-            error: function (xhr, status, error) {
-                showAlert('Error: ' + error, 'danger');
-            }
-        });
-    });
-
-    refreshAll();
-});
-
-function refreshAll() {
-    refreshTracks();
-    refreshLooperStatus();
-    refreshOutputRecorderStatus();
-}
-
-function refreshTracks() {
-    for (var i = 0; i < tracks_num; i++) {
-        refreshTrack(i);
-    }
-}
-
-function refreshTrack(trackId) {
-    $.ajax({
-        url: '/api/track/' + trackId,
-        type: 'get',
-        data: {},
-        cache: false,
-        success: function(data) {
-            var recording = data.recording
-            var playing = data.playing
-            var nonempty = !data.empty
-            updateElementClass("#label-track-"+trackId+"-recording", recording, "bg-danger", "bg-secondary text-decoration-line-through");
-            updateElementClass("#label-track-"+trackId+"-playing", playing, "bg-success", "bg-secondary text-decoration-line-through");
-            updateElementClass("#label-track-"+trackId+"-nonempty", nonempty, "bg-warning text-dark", "bg-secondary text-decoration-line-through");
-        },
-        error: function (xhr, status, error) {
-            showAlert('Error: ' + error, 'danger');
-        }
-    });
-}
-
-function refreshLooperStatus() {
-    $.ajax({
-        url: '/api/player',
-        type: 'get',
-        data: {},
-        cache: false,
-        success: function(data) {
-            $("#looper-status-phase").html(data.phase);
-            $("#looper-status-position").html(data.position);
-            $("#looper-status-duration").html(data.loop_duration);
-        },
-        error: function (xhr, status, error) {
-            showAlert('Error: ' + error, 'danger');
-        }
-    });
-}
-
-function refreshOutputRecorderStatus() {
-    $.ajax({
-        url: '/api/recorder',
-        type: 'get',
-        data: {},
-        cache: false,
-        success: function(data) {
-            $("#recorder-status-saving").html(data.saving.toString());
-            $("#recorder-status-duration").html(data.recorded_duration.toString() + 's');
-        },
-        error: function (xhr, status, error) {
-            showAlert('Error: ' + error, 'danger');
-        }
-    });
-}
-
-function updateElementClass(elementId, condition, onClass, offClass) {
-    if (condition) {
-        $(elementId).addClass(onClass);
-        $(elementId).removeClass(offClass);
-    } else {
-        $(elementId).addClass(offClass);
-        $(elementId).removeClass(onClass);
-    }
-}
-
-function showAlert(message, type) {
-    console.log('alert ' + type + ': ' + message)
-    var wrapper = document.createElement('div')
-    wrapper.innerHTML = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">' + message + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>'
-    document.getElementById('alerts-placeholder').append(wrapper)
-}
+    bindTrackButtons()
+    bindRecorderButtons()
+    refreshAllStatus()
+})
 </script>
-
-</body>
-</html>
+{% endblock %}

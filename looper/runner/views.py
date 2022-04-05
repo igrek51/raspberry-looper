@@ -20,6 +20,12 @@ def setup_web_views(app: FastAPI, looper: Looper):
             "track_ids": list(range(looper.config.tracks_num)),
         })
 
+    @app.get("/master", response_class=HTMLResponse)
+    async def view_master(request: Request):
+        return templates.TemplateResponse("master.html", {
+            "request": request,
+        })
+
     @app.get("/recordings", response_class=HTMLResponse)
     async def view_recordings(request: Request):
         return templates.TemplateResponse("recordings.html", {
