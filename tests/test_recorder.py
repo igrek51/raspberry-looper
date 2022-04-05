@@ -6,7 +6,7 @@ from pydub import AudioSegment
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
-from looper.runner.save import save_mp3
+from looper.runner.recorder import save_mp3
 
 
 def test_save_recording():

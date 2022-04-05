@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
-from nuclear.sublog import log
 
 from looper.runner.looper import Looper
 
@@ -30,5 +29,5 @@ def setup_web_views(app: FastAPI, looper: Looper):
     async def view_recordings(request: Request):
         return templates.TemplateResponse("recordings.html", {
             "request": request,
-            "recordings": looper.saver.list_recordings(),
+            "recordings": looper.recorder.list_recordings(),
         })

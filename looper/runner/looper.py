@@ -9,7 +9,7 @@ import numpy as np
 
 from looper.runner.config import Config
 from looper.runner.pinout import Pinout
-from looper.runner.save import OutputSaver
+from looper.runner.recorder import OutputRecorder
 from looper.runner.track import Track
 
 
@@ -28,6 +28,7 @@ class Looper:
     current_position: int = 0  # current buffer (chunk) index
     master_chunks: List[np.array] = field(default_factory=list)
     tracks: List[Track] = field(default_factory=list)
+    recorder: OutputRecorder = None
 
     @property
     def loop_chunks_num(self) -> int:
@@ -58,7 +59,7 @@ class Looper:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
         self.reset()
-        self.saver = OutputSaver(self.config)
+        self.recorder = OutputRecorder(self.config)
 
         def stream_callback(in_data, frame_count, time_info, status_flags):
             input_chunk = np.frombuffer(in_data, dtype=np.int16)
@@ -80,7 +81,7 @@ class Looper:
                 self.overdub(input_chunk)
                 self.next_chunk()
 
-            self.saver.transmit(out_chunk)
+            self.recorder.transmit(out_chunk)
             return out_chunk, pyaudio.paContinue
 
         if self.config.offline:

@@ -24,7 +24,7 @@ class Recording:
 
 
 @dataclass
-class OutputSaver:
+class OutputRecorder:
     config: Config
     saving: bool = False
     chunks_written: int = 0
