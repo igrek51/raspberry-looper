@@ -1,5 +1,7 @@
 import asyncio
+import os
 import time
+from pathlib import Path
 
 from nuclear.sublog import log
 from nuclear.utils.shell import shell
@@ -23,6 +25,10 @@ def run_looper():
         out_device=config.out_device,
         channels=config.channels,
     )
+    if Path(config.workdir).is_dir():
+        os.chdir(config.workdir)
+    else:
+        log.warn(f"can't change working directory to {config.workdir}")
 
     try:
         pinout = Pinout()

@@ -31,8 +31,10 @@ class Server(uvicorn.Server):
 
 def start_api(looper: Looper) -> Server:
     fastapi_app = creat_fastapi_app(looper)
-    config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=8000, log_level="debug")
+    port = looper.config.http_port
+    config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=port, log_level="debug")
     server = Server(config=config)
+    log.info(f'Starting HTTP server at port {port}')
     server.start()
     return server
 

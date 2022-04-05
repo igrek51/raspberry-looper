@@ -44,6 +44,10 @@ class Config:
 
     leave_wav_recordings: bool = True
 
+    workdir: str = '/home/pi/looper'
+
+    http_port: int = 8000
+
 
     @property
     def chunk_length_ms(self) -> float:
