@@ -65,15 +65,13 @@ class Looper:
 
             # just listening to the input
             if self.phase == LoopPhase.VOID:
-                self.saver.transmit(input_chunk)
-                return input_chunk, pyaudio.paContinue
+                out_chunk = input_chunk
 
             # Recording master loop
             if self.phase == LoopPhase.RECORDING_MASTER:
                 if self.loop_chunks_num < self.config.max_loop_chunks:
                     self.master_chunks.append(input_chunk)
-                self.saver.transmit(input_chunk)
-                return input_chunk, pyaudio.paContinue
+                out_chunk = input_chunk
 
             # Loop playback + Overdub
             if self.phase == LoopPhase.LOOP:
@@ -81,8 +79,9 @@ class Looper:
                 out_chunk = self.current_playback(input_chunk)
                 self.overdub(input_chunk)
                 self.next_chunk()
-                self.saver.transmit(out_chunk)
-                return out_chunk, pyaudio.paContinue
+
+            self.saver.transmit(out_chunk)
+            return out_chunk, pyaudio.paContinue
 
         if self.config.offline:
             return
@@ -176,13 +175,13 @@ class Looper:
 
     def stop_recording_master(self):
         self.current_position = 0
-        self.phase = LoopPhase.LOOP
         for track in self.tracks:
             if track.index == 0:
                 track.playing = True
                 track.set_track(self.master_chunks)
             else:
                 track.set_empty(self.loop_chunks_num)
+        self.phase = LoopPhase.LOOP
 
         loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
         log.info(f'recorded master loop', 

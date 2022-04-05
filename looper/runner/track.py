@@ -19,13 +19,18 @@ class Track:
     empty: bool = True
     loop_chunks: List[np.array] = field(default_factory=list)
     recording_from: int = -1
+    dsp: SignalProcessor = None
+
+    def __post_init__(self):
+        self.dsp = SignalProcessor(self.config)
 
     def set_empty(self, chunks_num: int):
-        dsp = SignalProcessor(self.config)
-        self.loop_chunks = [dsp.silence() for i in range(chunks_num)]
+        self.loop_chunks = [self.dsp.silence() for i in range(chunks_num)]
         self.empty = True
     
     def set_track(self, chunks: List[np.array]):
+        self.dsp.fade_in(chunks[0])
+        self.dsp.fade_out(chunks[-1])
         self.loop_chunks = chunks
         self.empty = False
 
