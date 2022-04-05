@@ -80,7 +80,7 @@ class OutputSaver:
         self.wav_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.wav'
 
         log.debug('creating WAV file', path=self.wav_path)
-        Path(self.wav_path).parent.mkdir(exist_ok=True, parents=True)
+        Path(self.config.output_recordings_dir).mkdir(exist_ok=True, parents=True)
 
         with lock:
             self.wav = wave.open(str(self.wav_path), 'w')
@@ -103,23 +103,27 @@ class OutputSaver:
             self.wav.close()
             self.wav = None
             duration = self.chunks_written * self.config.chunk_length_s
-            filesize_mb = os.path.getsize(self.wav_path) / 1024 / 1024
+            wav_filesize_mb = os.path.getsize(self.wav_path) / 1024 / 1024
             log.debug('WAV file saved', 
                 filename=self.wav_path, 
                 chunks_saved=self.chunks_written,
                 duration=f'{duration:.2f}s',
-                size=f'{filesize_mb:.2f}MB')
+                size=f'{wav_filesize_mb:.2f}MB')
 
             mp3_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.mp3'
 
             audio = AudioSegment.from_wav(str(self.wav_path))
             audio.export(str(mp3_path), format='mp3')
 
-            self.wav_path.unlink()
+            if self.config.leave_wav_recordings:
+                log.warn('leaving raw WAV file', file=self.wav_path, size=f'{wav_filesize_mb:.2f}MB')
+            else:
+                self.wav_path.unlink()
 
-        filesize_mb = os.path.getsize(mp3_path) / 1024 / 1024
-        log.info('output converted to MP3', filename=mp3_path, 
-            duration=f'{audio.duration_seconds:.2f}s', size=f'{filesize_mb:.2f}MB')
+        mp3_filesize_mb = os.path.getsize(mp3_path) / 1024 / 1024
+        log.info('output converted to MP3', 
+            filename=mp3_path, duration=f'{audio.duration_seconds:.2f}s', 
+            wav_size=f'{wav_filesize_mb:.2f}MB', mp3_size=f'{mp3_filesize_mb:.2f}MB')
 
     def toggle_saving(self):
         if self.saving:
@@ -145,6 +149,7 @@ class OutputSaver:
     def list_recordings(self) -> List[Recording]:
         recordings = []
         dirpath = Path(self.config.output_recordings_dir)
+        dirpath.mkdir(exist_ok=True, parents=True)
         for path in dirpath.glob('*.mp3'):
             filesize_mb = os.path.getsize(path) / 1024 / 1024
             recordings.append(Recording(path.stem, path, str(path), filesize_mb))

@@ -204,7 +204,8 @@ class Looper:
 
     def reset_track(self, track_id: int):
         self.tracks[track_id].clear()
-        self.pinout.record_leds[track_id].blink(on_time=0.1, off_time=0.1, n=2, background=False)
+        if self.tracks[track_id].has_gpio:
+            self.pinout.record_leds[track_id].blink(on_time=0.1, off_time=0.1, n=2, background=False)
         log.info('track cleared', track=track_id)
         if all(track.empty for track in self.tracks):
             self.reset()
@@ -214,7 +215,7 @@ class Looper:
     def update_leds(self):
         for track in self.tracks:
             if track.has_gpio:
-                if track.recording or (self.phase == LoopPhase.RECORDING_MASTER and track.index == 0):
+                if self.is_recording(track.index):
                     self.pinout.record_leds[track.index].on()
                 else:
                     self.pinout.record_leds[track.index].off()
@@ -229,6 +230,9 @@ class Looper:
 
         if self.phase != LoopPhase.LOOP:
             self.pinout.progress_led.off()
+
+    def is_recording(self, track_id: int) -> bool:
+        return self.tracks[track_id].recording or (self.phase == LoopPhase.RECORDING_MASTER and track_id == 0)
 
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:

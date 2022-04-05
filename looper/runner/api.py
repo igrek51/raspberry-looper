@@ -57,7 +57,7 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:
     return {
         'index': looper.tracks[track_id].index,
-        'recording': looper.tracks[track_id].recording,
+        'recording': looper.is_recording(track_id),
         'playing': looper.tracks[track_id].playing,
         'empty': looper.tracks[track_id].empty,
     }

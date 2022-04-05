@@ -12,14 +12,14 @@ setup:
 push-first:
 	ssh pi "mkdir -p /home/pi/looper"
 	scp -r \
-		looper Makefile requirements.txt requirements-dev.txt setup.py README.md notebooks \
+		looper Makefile requirements.txt requirements-dev.txt setup.py README.md notebooks static templates \
 		pi:/home/pi/looper/
 	ssh pi "cd /home/pi/looper &&\
 		pip install -r requirements.txt &&\
 		python setup.py develop --user"
 
 push:
-	scp -r looper Makefile pi:/home/pi/looper/
+	scp -r looper Makefile templates pi:/home/pi/looper/
 
 run:
 	looper run

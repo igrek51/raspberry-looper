@@ -42,6 +42,8 @@ class Config:
 
     output_recordings_dir: str = "out/recordings"
 
+    leave_wav_recordings: bool = True
+
 
     @property
     def chunk_length_ms(self) -> float:
