@@ -39,12 +39,6 @@ function bindNewTrackButton() {
     })
 }
 
-function refreshAllStatus() {
-    refreshTracks()
-    refreshLooperStatus()
-    refreshOutputRecorderStatus()
-}
-
 function refreshTracks() {
     for (var i = 0; i < tracks_num; i++) {
         refreshTrack(i)

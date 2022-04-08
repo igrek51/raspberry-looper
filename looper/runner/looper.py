@@ -8,6 +8,7 @@ import pyaudio
 import numpy as np
 
 from looper.runner.config import Config
+from looper.runner.dsp import SignalProcessor
 from looper.runner.pinout import Pinout
 from looper.runner.recorder import OutputRecorder
 from looper.runner.track import Track
@@ -26,9 +27,12 @@ class Looper:
 
     phase: LoopPhase = LoopPhase.VOID
     current_position: int = 0  # current buffer (chunk) index
+    input_volume: float = 0  # dB
+    input_muted: bool = False
     master_chunks: List[np.array] = field(default_factory=list)
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
+    dsp: SignalProcessor = None
 
     @property
     def loop_chunks_num(self) -> int:
@@ -58,11 +62,16 @@ class Looper:
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
-        self.reset()
         self.recorder = OutputRecorder(self.config)
+        self.dsp = SignalProcessor(self.config)
+        self.reset()
 
         def stream_callback(in_data, frame_count, time_info, status_flags):
-            input_chunk = np.frombuffer(in_data, dtype=np.int16)
+            if self.input_muted:
+                input_chunk = self.dsp.silence()
+            else:
+                input_chunk = np.frombuffer(in_data, dtype=np.int16)
+                input_chunk = self.dsp.amplify(input_chunk, self.input_volume)
 
             # just listening to the input
             if self.phase == LoopPhase.VOID:
@@ -128,7 +137,7 @@ class Looper:
                 )
 
     def current_playback(self, input_chunk: np.array) -> np.array:
-        active_chunks = [track.loop_chunks[self.current_position]
+        active_chunks = [track.current_playback(self.current_position)
                          for track in self.tracks
                          if track.playing]
         if len(active_chunks) == 0:
@@ -185,9 +194,12 @@ class Looper:
         self.phase = LoopPhase.LOOP
 
         loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
-        log.info(f'recorded master loop', 
+        loudness = self.dsp.compute_loudness(self.master_chunks)  # should be below 0
+        log.info(f'master loop has been recorded', 
+            loop_duration=f'{round(loop_duration_s, 2)}s',
+            loudness=f'{round(loudness, 2)}dB',
             chunks=self.loop_chunks_num,
-            loop_duration=f'{round(loop_duration_s, 2)}s')
+        )
 
     def start_recording(self, track_id: int):
         if self.phase != LoopPhase.LOOP:

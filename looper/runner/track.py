@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from turtle import pos
 from typing import List
 
 import numpy as np
@@ -17,6 +18,7 @@ class Track:
     recording: bool = False
     playing: bool = False
     empty: bool = True
+    volume: float = 0  # dB
     loop_chunks: List[np.array] = field(default_factory=list)
     recording_from: int = -1
     dsp: SignalProcessor = None
@@ -53,6 +55,10 @@ class Track:
                 log.warn('cannot start playing empty track', track_idx=self.index)
             else:
                 self.playing = True
+
+    def current_playback(self, position: int) -> np.array:
+        chunk = self.loop_chunks[position]
+        return self.dsp.amplify(chunk, self.volume)
 
     def clear(self):
         self.recording = False

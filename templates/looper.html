@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
 
-    <div class="card">
+    <div class="card bg-light">
         <div class="card-header">
             Tracks
         </div>
@@ -34,7 +34,7 @@
         </div>
     </div>
 
-    <div class="card">
+    <div class="card bg-light">
         <div class="card-header">
             Looper
         </div>
@@ -51,22 +51,6 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            Output Recorder
-        </div>
-        <div class="card-body">
-            <p>
-                Recording: <span id="recorder-status-saving"></span>
-            </p>
-            <p>
-                Duration: <span id="recorder-status-duration"></span>
-            </p>
-            <p>
-                <button type="button" class="btn btn-danger" id="btn-save-output">Save output</button>
-            </p>
-        </div>
-    </div>
 
 </div>
 {% endblock %}
@@ -79,7 +63,9 @@ $(document).ready(function() {
     bindTrackButtons()
     bindRecorderButtons()
     bindNewTrackButton()
-    refreshAllStatus()
+
+    refreshTracks()
+    refreshLooperStatus()
 })
 </script>
 {% endblock %}
