@@ -200,6 +200,8 @@ class Looper:
             loudness=f'{round(loudness, 2)}dB',
             chunks=self.loop_chunks_num,
         )
+        if loudness > 0:
+            log.warn('master loop is too loud', loudness=f'{round(loudness, 2)}dB')
 
     def start_recording(self, track_id: int):
         if self.phase != LoopPhase.LOOP:
@@ -262,6 +264,13 @@ class Looper:
         if self.phase == LoopPhase.LOOP:
             track.set_empty(self.loop_chunks_num)
         log.info('new track added', tracks_num=self.config.tracks_num)
+
+    def toggle_input_mute(self):
+        self.input_muted = not self.input_muted
+        if self.input_muted:
+            log.info('input muted')
+        else:
+            log.info('input unmuted')
 
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:

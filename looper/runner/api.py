@@ -1,6 +1,7 @@
-from typing import Dict, List, Iterable
+from typing import Dict, Iterable
 
 from fastapi import FastAPI
+from nuclear.sublog import log
 
 from looper.runner.looper import Looper
 
@@ -55,6 +56,40 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     @app.post("/api/recorder/toggle")
     async def toggle_saving_output_to_file():
         looper.recorder.toggle_saving()
+
+
+    @app.get("/api/volume/input")
+    async def get_input_volume():
+        return {
+            'volume': looper.input_volume,
+            'muted': looper.input_muted,
+        }
+
+    @app.post("/api/volume/input/set/{volume}")
+    async def set_input_volume(volume: float):
+        looper.input_volume = volume
+        log.info('input volume set', volume=f'{volume}dB')
+
+    @app.post("/api/volume/input/mute")
+    async def toggle_mute_input_volume():
+        looper.toggle_input_mute()
+
+    @app.get("/api/volume/track/{track_id}")
+    async def get_track_volume(track_id: int):
+        return {
+            'volume': looper.tracks[track_id].volume,
+        }
+
+    @app.post("/api/volume/track/{track_id}/set/{volume}")
+    async def set_track_volume(track_id: int, volume: float):
+        looper.tracks[track_id].volume = volume
+        log.info('track volume set', track=track_id, volume=f'{volume}dB')
+
+    @app.get("/api/volume/track/{track_id}/loudness")
+    async def compute_track_loudness(track_id: int):
+        return {
+            'loudness': looper.tracks[track_id].compute_loudness(),
+        }
 
 
 

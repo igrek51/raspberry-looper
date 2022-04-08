@@ -34,12 +34,18 @@ class SignalProcessor:
     def compute_chunk_loudness(self, chunk: np.array) -> float:
         """Compute loudness in decibels relative to full scale (dBFS)"""
         rms = np.sqrt(np.mean(np.square(chunk / self.max_amp)))
+        if rms <= 0:
+            return -100
         return 20 * np.log10(rms * np.sqrt(2))
 
     def compute_loudness(self, chunks: List[np.array]) -> float:
         """Compute loudness in decibels relative to full scale (dBFS)"""
+        if not chunks:
+            return -100
         means = []
         for chunk in chunks:
             means.append(np.mean(np.square(chunk / self.max_amp)))
         rms = np.sqrt(np.mean(means))
+        if rms <= 0:
+            return -100
         return 20 * np.log10(rms * np.sqrt(2))

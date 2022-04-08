@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from turtle import pos
 from typing import List
 
 import numpy as np
@@ -50,15 +49,20 @@ class Track:
     def toggle_play(self):
         if self.playing:
             self.playing = False
+            log.debug('track muted', track_id=self.index)
         else:
             if self.empty:
-                log.warn('cannot start playing empty track', track_idx=self.index)
+                log.warn('cannot start playing empty track', track_id=self.index)
             else:
                 self.playing = True
+                log.debug('track unmuted', track_id=self.index)
 
     def current_playback(self, position: int) -> np.array:
         chunk = self.loop_chunks[position]
         return self.dsp.amplify(chunk, self.volume)
+
+    def compute_loudness(self) -> float:
+        return self.dsp.compute_loudness(self.loop_chunks)
 
     def clear(self):
         self.recording = False

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card bg-light">
+        <div class="card-header">Input Volume</div>
+        <div class="card-body">
+            <p>
+                Amplification: <span id="volume-input-volume"></span>dB
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Input volume [dB]" id="input-input-volume">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume">Set</button>
+                </div>
+            </p>
+            <p>
+                Muted: <span id="volume-input-muted"></span>
+                <button type="button" class="btn btn-primary" id="btn-mute-input">Mute</button>
+            </p>
+        </div>
+    </div>
+
+    <div class="card bg-light">
+        <div class="card-header">Tracks Output Volume</div>
+        <div class="card-body">
+
+            <div class="card-group">
+                {% for track_id in track_ids %}
+                <div class="card text-dark bg-light mb-3">
+                    <div class="card-header">Track {{track_id}}</div>
+                    <div class="card-body">
+                        <p>
+                            Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="Output volume [dB]" id="input-track-{{track_id}}-volume">
+                                <button class="btn btn-outline-secondary btn-set-track-volume" type="button" id="btn-set-track-{{track_id}}-volume" track-id="{{track_id}}">Set</button>
+                            </div>
+                        </p>
+                        <p>
+                            Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
+                        </p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+tracks_num = {{track_ids|length}}
+
+$(document).ready(function() {
+    // input volume buttons
+    $("#btn-set-input-volume").click(function () {
+        volume = $('#input-input-volume').val();
+        ajaxRequest('post', `/api/volume/input/set/${volume}`, function(data) {
+            refreshInputVolume()
+        })
+    })
+    $("#btn-mute-input").click(function () {
+        ajaxRequest('post', '/api/volume/input/mute', function(data) {
+            refreshInputVolume()
+        })
+    })
+    // track volume buttons
+    $(".btn-set-track-volume").click(function () {
+        var trackId = $(this).attr('track-id')
+        volume = $(`#input-track-${trackId}-volume`).val();
+        ajaxRequest('post', `/api/volume/track/${trackId}/set/${volume}`, function(data) {
+            refreshTrackVolume(trackId)
+        })
+    })
+
+    refreshInputVolume()
+    refreshTrackVolumes()
+})
+</script>
+{% endblock %}

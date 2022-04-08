@@ -71,6 +71,29 @@ function refreshOutputRecorderStatus() {
     })
 }
 
+function refreshInputVolume() {
+    ajaxRequest('get', '/api/volume/input', function(data) {
+        $("#volume-input-volume").html(data.volume.toString())
+        $("#volume-input-muted").html(data.muted.toString())
+    })
+}
+
+function refreshTrackVolumes() {
+    for (var i = 0; i < tracks_num; i++) {
+        refreshTrackVolume(i)
+    }
+}
+
+function refreshTrackVolume(trackId) {
+    ajaxRequest('get', `/api/volume/track/${trackId}`, function(data) {
+        $(`#label-track-${trackId}-volume`).html(data.volume.toString())
+    })
+    ajaxRequest('get', `/api/volume/track/${trackId}/loudness`, function(data) {
+        $(`#label-track-${trackId}-loudness`).html(data.loudness.toString())
+    })
+}
+
+
 function ajaxRequest(type, url, onSuccess) {
     $.ajax({
         url: url,
