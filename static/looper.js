@@ -74,7 +74,7 @@ function refreshOutputRecorderStatus() {
 function refreshInputVolume() {
     ajaxRequest('get', '/api/volume/input', function(data) {
         $("#volume-input-volume").html(data.volume.toString())
-        $("#volume-input-muted").html(data.muted.toString())
+        updateElementClass("#label-volume-input-muted", data.muted, "bg-danger", "bg-secondary text-decoration-line-through")
     })
 }
 

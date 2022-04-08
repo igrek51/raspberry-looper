@@ -8,13 +8,13 @@
         <div class="card-body">
             <p>
                 Amplification: <span id="volume-input-volume"></span>dB
+                <span class="badge bg-secondary text-decoration-line-through" id="label-volume-input-muted">Muted</span>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control" placeholder="Input volume [dB]" id="input-input-volume">
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume">Set</button>
                 </div>
             </p>
             <p>
-                Muted: <span id="volume-input-muted"></span>
                 <button type="button" class="btn btn-primary" id="btn-mute-input">Mute</button>
             </p>
         </div>
@@ -30,14 +30,14 @@
                     <div class="card-header">Track {{track_id}}</div>
                     <div class="card-body">
                         <p>
+                            Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
+                        </p>
+                        <p>
                             Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
                             <div class="input-group mb-3">
                                 <input type="text" class="form-control" placeholder="Output volume [dB]" id="input-track-{{track_id}}-volume">
                                 <button class="btn btn-outline-secondary btn-set-track-volume" type="button" id="btn-set-track-{{track_id}}-volume" track-id="{{track_id}}">Set</button>
                             </div>
-                        </p>
-                        <p>
-                            Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
                         </p>
                     </div>
                 </div>
