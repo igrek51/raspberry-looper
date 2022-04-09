@@ -5,14 +5,14 @@ Audio track looper running on Raspberry Pi.
 
 On the Raspberry Pi:
 
-1. Flash official RaspiOS `2022-01-28-raspios-bullseye-armhf.img` on SD.  
+1. Flash official RaspiOS `2022-04-04-raspios-bullseye-armhf.img` on SD.  
    Plug in USB soundcard with input and output.
 2. Boot Raspberry, let it reboot (expand filesystem), configure WiFi, change user password.
 3. Enable SSH: `sudo raspi-config` / Interface Options / SSH
 
 On the host:
 
-5. Log in the Raspberry Pi:
+4. Log in the Raspberry Pi:
     ```bash
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "192.168.0.51"
     ssh -o StrictHostKeyChecking=no pi@192.168.0.51 "mkdir -p /home/pi/.ssh"
@@ -20,7 +20,7 @@ On the host:
     scp -o StrictHostKeyChecking=no ~/.ssh/id_rsa.pub pi@192.168.0.51:/home/pi/.ssh/authorized_keys
     ```
 
-4. Configure SSH alias in `$HOME/.ssh/config`:
+5. Configure SSH alias in `$HOME/.ssh/config`:
     ```
     Host pi
         HostName 192.168.0.51
@@ -30,10 +30,10 @@ On the host:
 
 On the Raspberry Pi:
 
-5. Install pyaudio: `sudo apt install python3-pyaudio`.  
+6. Install pyaudio: `sudo apt install python3-pyaudio`.  
     On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197)
 
-6. Setup volume levels with `alsamixer`:
+7. Setup volume levels with `alsamixer`:
     - F6, 
     - select USB Audio Device,
     - F5 (to view Playback and Capture), 
@@ -42,13 +42,13 @@ On the Raspberry Pi:
 
 On the host:
 
-7. Run `make push-first` to push source code.
+8. Run `make push-first` to push source code.
 
 On Raspberry Pi:
 
-8. Run `looper run`.
+9. Run `looper run`.
 
-9. (Optional) Add looper to autostart:
+10. (Optional) Add looper to autostart:
 ```bash
 mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
