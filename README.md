@@ -1,7 +1,35 @@
 # Raspberry Looper
-Audio track looper running on Raspberry Pi.
-It is controlled by physical buttons and LEDs,
-more functions are provided by frontend through WiFi.
+Audio track looper running on Raspberry Pi 
+for playing multi-instrumental songs on your own.
+You can record and play tracks using physical buttons and LEDs
+as well as web application through WiFi,
+which provides more advanced functions.
+
+## Features
+Our chief weapons are:
+
+- recording and playing unlimited number of tracks,
+- adjusting the volume levels of the input, output and each of the tracks, 
+- recording output session to MP3 file and downloading it from there,
+- visualizing track plots,
+- controlling tracks with physical buttons and web app from a mobile phone,
+
+## Examples
+![](./docs/img/device-in-action-labelled.jpg)
+
+![](./docs/img/screen-tracks.png)
+
+![](./docs/img/screen-plot.png)
+
+![](./docs/img/screen-volume.png)
+
+![](./docs/img/screen-recorder.png)
+
+## Hardware
+You're going to need:
+
+- Raspberry Pi (eg. 3B model) or other compatible board
+- USB soundcard with 1 input and 1 output
 
 ## Setup
 On the Raspberry Pi:
@@ -63,17 +91,6 @@ Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
 
-## Examples
-![](./docs/img/device-in-action-labelled.jpg)
-
-![](./docs/img/screen-tracks.png)
-
-![](./docs/img/screen-plot.png)
-
-![](./docs/img/screen-volume.png)
-
-![](./docs/img/screen-recorder.png)
-
 ## Usage
 Run `looper --help` to see available commands.
 
@@ -87,9 +104,11 @@ Run `looper --help` to see available commands.
 Apart from controlling the looper with the physical buttons, 
 you can also visit HTTP frontend page at http://192.168.0.51:8000 .
 This gives access to more options like:
+
 - recording/playing more tracks (unlimited number), 
 - adjusting the volume levels for the input and each of the tracks, 
-- recording output session to MP3 file and downloading it from there.
+- recording output session to MP3 file and downloading it from there,
+- displaying track plots.
 
 ## Logs
 Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
