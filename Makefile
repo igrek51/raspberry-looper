@@ -10,6 +10,16 @@ setup:
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 
+run:
+	looper run
+
+test:
+	cd tests && python -m pytest -vv --tb=short -ra $(test)
+
+jupyter:
+	jupyter lab --ip=0.0.0.0 --port=8080
+
+
 remote-create-dir:
 	ssh pi "mkdir -p /home/pi/looper"
 
@@ -25,14 +35,13 @@ push:
 		looper Makefile static templates requirements.txt requirements-dev.txt setup.py README.md notebooks \
 		pi:/home/pi/looper/
 
-run:
-	looper run
+remote-run:
+	ssh -t pi "cd /home/pi/looper && python3 -m looper run"
 
-jupyter:
-	jupyter lab --ip=0.0.0.0 --port=8080
+push-and-run: push remote-run
+
+list-looper-ps:
+	ssh pi "ps ax | grep looper"
 
 pull-notebooks:
 	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/
-
-test:
-	cd tests && python -m pytest -vv --tb=short -ra $(test)
