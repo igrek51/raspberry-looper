@@ -66,13 +66,13 @@ EOF
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)
 
-![](./docs/img/screen-tracks.jpg)
+![](./docs/img/screen-tracks.png)
 
-![](./docs/img/screen-plot.jpg)
+![](./docs/img/screen-plot.png)
 
-![](./docs/img/screen-volume.jpg)
+![](./docs/img/screen-volume.png)
 
-![](./docs/img/screen-recorder.jpg)
+![](./docs/img/screen-recorder.png)
 
 ## Usage
 Run `looper --help` to see available commands.
