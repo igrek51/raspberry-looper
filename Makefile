@@ -19,14 +19,17 @@ test:
 jupyter:
 	jupyter lab --ip=0.0.0.0 --port=8080
 
+logs:
+	less -R /home/pi/looper/looper.log
+
 
 remote-create-dir:
 	ssh pi "mkdir -p /home/pi/looper"
 
 remote-install-package:
 	ssh pi "cd /home/pi/looper &&\
-		pip install -r requirements.txt &&\
-		python setup.py develop --user"
+		pip3 install -r requirements.txt &&\
+		python3 setup.py develop --user"
 
 remote-install: remote-create-dir push remote-install-package
 
@@ -41,7 +44,7 @@ remote-run:
 push-and-run: push remote-run
 
 list-looper-ps:
-	ssh pi "ps ax | grep looper"
+	pgrep -a -f "looper run"
 
 pull-notebooks:
 	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/

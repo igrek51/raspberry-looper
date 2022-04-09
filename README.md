@@ -15,9 +15,9 @@ On the host:
 4. Log in the Raspberry Pi:
     ```bash
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "192.168.0.51"
-    ssh -o StrictHostKeyChecking=no pi@192.168.0.51 "mkdir -p /home/pi/.ssh"
+    ssh pi@192.168.0.51 "mkdir -p /home/pi/.ssh"
     # Allow to log in with your ssh key
-    scp -o StrictHostKeyChecking=no ~/.ssh/id_rsa.pub pi@192.168.0.51:/home/pi/.ssh/authorized_keys
+    scp ~/.ssh/id_rsa.pub pi@192.168.0.51:/home/pi/.ssh/authorized_keys
     ```
 
 5. Configure SSH alias in `$HOME/.ssh/config`:
@@ -30,10 +30,12 @@ On the host:
 
 On the Raspberry Pi:
 
-6. Install pyaudio: `sudo apt install python3-pyaudio`.  
+6. Install pyaudio: `sudo apt install python3-pyaudio` (on RaspberryPi).  
     On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197)
 
-7. Setup volume levels with `alsamixer`:
+7. Install `sudo apt install libatlas-base-dev`
+
+8. Setup volume levels with `alsamixer`:
     - F6, 
     - select USB Audio Device,
     - F5 (to view Playback and Capture), 
@@ -42,13 +44,15 @@ On the Raspberry Pi:
 
 On the host:
 
-8. Run `make push-first` to push source code.
+9. Run `make remote-install` to push source code.
+
+10. Log in again via SSH to reload `~/.profile`.
 
 On Raspberry Pi:
 
-9. Run `looper run`.
+11. Run `looper run`.
 
-10. (Optional) Add looper to autostart:
+12. (Optional) Add looper to autostart:
 ```bash
 mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
@@ -57,37 +61,26 @@ Type=Application
 Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
-Watch logs with `less -R /home/pi/looper/looper.log`
 
-## List input devices
-To find out what is your device index:
+## Logs
+Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
 
-```python
-import pyaudio
+## Usage
+Run `looper --help` to see available commands.
 
-pa = pyaudio.PyAudio()
-n = pa.get_device_count()
+- `looper run` - Run looper in a standard mode for recording and playing.
+- `looper devices` - List input devices to find out what is your device index.
+- `looper latency` - Measure output-input latency. 
+  Put microphone close to a speaker or wire the output with the input.
+- `looper wire` - Wire the input with the output to see 
+  if you're comfortable with the audio quality and latency.
 
-print('Found ' + str(n) + ' devices.')
-
-for i in range(n):
-    print('INDEX ' + str(i) + ': ' + str(pa.get_device_info_by_index(i)['name']))
-
-pa.terminate()
-```
-
-or
-
-```python
-import pyaudio
-p = pyaudio.PyAudio()
-info = p.get_host_api_info_by_index(0)
-numdevices = info.get('deviceCount')
-for i in range(0, numdevices):
-    if (p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
-        print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0, i).get('name'))
-```
-
+Apart from controlling the looper with the physical buttons, 
+you can also visit HTTP frontend page at http://192.168.0.51:8000 .
+This gives access to more options like:
+- recording/playing more tracks (unlimited number), 
+- adjusting the volume levels for the input and each of the tracks, 
+- recording output session to MP3 file and downloading it from there.
 
 ## References
 - https://github.com/RandomVertebrate/raspi-looper
