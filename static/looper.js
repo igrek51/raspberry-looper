@@ -78,6 +78,13 @@ function refreshInputVolume() {
     })
 }
 
+function refreshOutputVolume() {
+    ajaxRequest('get', '/api/volume/output', function(data) {
+        $("#volume-output-volume").html(data.volume.toString())
+        updateElementClass("#label-volume-output-muted", data.muted, "bg-danger", "bg-secondary text-decoration-line-through")
+    })
+}
+
 function refreshTrackVolumes() {
     for (var i = 0; i < tracks_num; i++) {
         refreshTrackVolume(i)

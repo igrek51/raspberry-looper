@@ -12,7 +12,7 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def get_player_status():
         return await _get_player_status(looper)
 
-
+    # Tracks
     @app.get("/api/track")
     async def get_all_tracks_status():
         return [item async for item in _get_all_tracks_info(looper)]
@@ -37,7 +37,7 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def add_new_track():
         return looper.add_track()
 
-
+    # Output Recorder
     @app.get("/api/recorder")
     async def get_output_recorder_status():
         return {
@@ -57,7 +57,7 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def toggle_saving_output_to_file():
         looper.recorder.toggle_saving()
 
-
+    # Input Volume
     @app.get("/api/volume/input")
     async def get_input_volume():
         return {
@@ -74,6 +74,24 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def toggle_mute_input_volume():
         looper.toggle_input_mute()
 
+    # Output Volume
+    @app.get("/api/volume/output")
+    async def get_output_volume():
+        return {
+            'volume': looper.output_volume,
+            'muted': looper.output_muted,
+        }
+
+    @app.post("/api/volume/output/set/{volume}")
+    async def set_output_volume(volume: float):
+        looper.output_volume = volume
+        log.info('output volume set', volume=f'{volume}dB')
+
+    @app.post("/api/volume/output/mute")
+    async def toggle_mute_output_volume():
+        looper.toggle_output_mute()
+
+    # Tracks Volume
     @app.get("/api/volume/track/{track_id}")
     async def get_track_volume(track_id: int):
         return {

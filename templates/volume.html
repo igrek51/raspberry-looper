@@ -47,6 +47,23 @@
         </div>
     </div>
 
+    <div class="card bg-light">
+        <div class="card-header">Master Output Volume</div>
+        <div class="card-body">
+            <p>
+                Amplification: <span id="volume-output-volume"></span>dB
+                <span class="badge bg-secondary text-decoration-line-through" id="label-volume-output-muted">Muted</span>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" placeholder="Output volume [dB]" id="input-output-volume">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume">Set</button>
+                </div>
+            </p>
+            <p>
+                <button type="button" class="btn btn-primary" id="btn-mute-output">Mute</button>
+            </p>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -67,6 +84,18 @@ $(document).ready(function() {
             refreshInputVolume()
         })
     })
+    // output volume buttons
+    $("#btn-set-output-volume").click(function () {
+        volume = $('#input-output-volume').val();
+        ajaxRequest('post', `/api/volume/output/set/${volume}`, function(data) {
+            refreshOutputVolume()
+        })
+    })
+    $("#btn-mute-output").click(function () {
+        ajaxRequest('post', '/api/volume/output/mute', function(data) {
+            refreshOutputVolume()
+        })
+    })
     // track volume buttons
     $(".btn-set-track-volume").click(function () {
         var trackId = $(this).attr('track-id')
@@ -77,6 +106,7 @@ $(document).ready(function() {
     })
 
     refreshInputVolume()
+    refreshOutputVolume()
     refreshTrackVolumes()
 })
 </script>

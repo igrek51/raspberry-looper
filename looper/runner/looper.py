@@ -30,6 +30,8 @@ class Looper:
     current_position: int = 0  # current buffer (chunk) index
     input_volume: float = 0  # dB
     input_muted: bool = False
+    output_volume: float = 0  # dB
+    output_muted: bool = False
     master_chunks: List[np.array] = field(default_factory=list)
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
@@ -92,6 +94,11 @@ class Looper:
                     out_chunk = self.current_playback(input_chunk)
                     self.overdub(input_chunk)
                     self.next_chunk()
+
+            if self.output_muted:
+                out_chunk = self.dsp.silence()
+            else:
+                out_chunk = self.dsp.amplify(out_chunk, self.output_volume)
 
             self.recorder.transmit(out_chunk)
             return out_chunk, pyaudio.paContinue
@@ -277,6 +284,13 @@ class Looper:
             log.info('input muted')
         else:
             log.info('input unmuted')
+
+    def toggle_output_mute(self):
+        self.output_muted = not self.output_muted
+        if self.output_muted:
+            log.info('output muted')
+        else:
+            log.info('output unmuted')
 
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:
