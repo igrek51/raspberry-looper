@@ -7,6 +7,7 @@ from threading import Lock
 from nuclear.sublog import log
 import pyaudio
 import numpy as np
+from looper.devices import verify_device_index
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
@@ -66,6 +67,8 @@ class Looper:
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
+        if self.config.online and self.config.in_device == self.config.out_device:
+            verify_device_index(self.config.in_device, self.pa)
         self.recorder = OutputRecorder(self.config)
         self.dsp = SignalProcessor(self.config)
         self.reset()
@@ -303,10 +306,10 @@ class Looper:
         await asyncio.sleep(chunks_left_s)
     
     def close(self):
-        log.debug('closing...')
+        log.debug('closing looper...')
         if self.config.online:
             self.pinout.init_leds()
             self.loop_stream.stop_stream()
             self.loop_stream.close()
         self.pa.terminate()
-        log.info('Stream closed')
+        log.info('Audio Stream closed')

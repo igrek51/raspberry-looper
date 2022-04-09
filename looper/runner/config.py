@@ -48,6 +48,9 @@ class Config:
 
     http_port: int = 8000
 
+    # full-scale amplitude (2**16/2-1)
+    max_amplitude: int = 32767
+
 
     @property
     def chunk_length_ms(self) -> float:
