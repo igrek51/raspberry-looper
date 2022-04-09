@@ -11,6 +11,7 @@ from looper.check.devices import verify_device_index
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
+from looper.runner.metronome import Metronome
 from looper.runner.pinout import Pinout
 from looper.runner.recorder import OutputRecorder
 from looper.runner.track import Track
@@ -214,6 +215,7 @@ class Looper:
             loop_duration=f'{round(loop_duration_s, 2)}s',
             loudness=f'{round(loudness, 2)}dB',
             chunks=self.loop_chunks_num,
+            samples=self.loop_chunks_num*self.config.chunk_size,
         )
         if loudness > 0:
             log.warn('master loop is too loud', loudness=f'{round(loudness, 2)}dB')
@@ -240,7 +242,7 @@ class Looper:
 
     def reset_track(self, track_id: int):
         self.tracks[track_id].clear()
-        if self.tracks[track_id].has_gpio:
+        if self.tracks[track_id].has_gpio and self.config.online:
             self.pinout.record_leds[track_id].blink(on_time=0.1, off_time=0.1, n=2, background=False)
         log.info('track cleared', track=track_id)
         if all(track.empty for track in self.tracks):
@@ -249,23 +251,24 @@ class Looper:
         self.update_leds()
 
     def update_leds(self):
-        for track in self.tracks:
-            if track.has_gpio:
-                if self.is_recording(track.index):
-                    self.pinout.record_leds[track.index].on()
-                else:
-                    self.pinout.record_leds[track.index].off()
-
-                if track.playing:
-                    self.pinout.play_leds[track.index].on()
-                else:
-                    if track.empty:
-                        self.pinout.play_leds[track.index].off()
+        if self.config.online:
+            for track in self.tracks:
+                if track.has_gpio:
+                    if self.is_recording(track.index):
+                        self.pinout.record_leds[track.index].on()
                     else:
-                        self.pinout.play_leds[track.index].blink(on_time=0.1, off_time=0.9)
+                        self.pinout.record_leds[track.index].off()
 
-        if self.phase != LoopPhase.LOOP:
-            self.pinout.progress_led.off()
+                    if track.playing:
+                        self.pinout.play_leds[track.index].on()
+                    else:
+                        if track.empty:
+                            self.pinout.play_leds[track.index].off()
+                        else:
+                            self.pinout.play_leds[track.index].blink(on_time=0.1, off_time=0.9)
+
+            if self.phase != LoopPhase.LOOP:
+                self.pinout.progress_led.off()
 
     def is_recording(self, track_id: int) -> bool:
         return self.tracks[track_id].recording or (self.phase == LoopPhase.RECORDING_MASTER and track_id == 0)
@@ -280,6 +283,30 @@ class Looper:
             if self.phase == LoopPhase.LOOP:
                 track.set_empty(self.loop_chunks_num)
         log.info('new track added', tracks_num=self.config.tracks_num)
+
+    def set_metronome_tracks(self, bpm: float, beats: int = 4):
+        if self.phase != LoopPhase.VOID:
+            raise RuntimeError('loop has to be empty to add metronome track')
+
+        with self._lock:
+            self.master_chunks = Metronome(self.config).generate_beat(bpm, beats)
+            self.current_position = 0
+            for track in self.tracks:
+                if track.index == 0:
+                    track.playing = True
+                    track.set_track(self.master_chunks)
+                else:
+                    track.set_empty(self.loop_chunks_num)
+            self.phase = LoopPhase.LOOP
+
+        loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
+        log.info(f'master loop has been set to metronome beats', 
+            bpm=bpm,
+            beats=beats,
+            loop_duration=f'{round(loop_duration_s, 2)}s',
+            chunks=self.loop_chunks_num,
+            samples=self.loop_chunks_num*self.config.chunk_size,
+        )
 
     def toggle_input_mute(self):
         self.input_muted = not self.input_muted

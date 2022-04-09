@@ -45,3 +45,9 @@ def setup_web_views(app: FastAPI, looper: Looper):
             "request": request,
             "recordings": looper.recorder.list_recordings(),
         })
+
+    @app.get("/metronome", response_class=HTMLResponse)
+    async def view_metronome(request: Request):
+        return templates.TemplateResponse("metronome.html", {
+            "request": request,
+        })

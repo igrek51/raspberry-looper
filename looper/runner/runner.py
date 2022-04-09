@@ -65,16 +65,16 @@ async def main_async_loop(looper: Looper):
 
 
 async def progress_loop(looper: Looper):
-    while True:
-        await looper.update_progress()
+    if looper.config.online:
+        while True:
+            await looper.update_progress()
 
 
 async def update_leds_loop(looper: Looper):
-    if looper.config.offline:
-        return
-    while True:
-        looper.update_leds()
-        await asyncio.sleep(1)
+    if looper.config.online:
+        while True:
+            looper.update_leds()
+            await asyncio.sleep(1)
 
 
 def shutdown(looper: Looper):

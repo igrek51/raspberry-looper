@@ -35,7 +35,7 @@ remote-install: remote-create-dir push remote-install-package
 
 push:
 	rsync -avh --delete --exclude='*.pyc' --exclude='__pycache__' \
-		looper Makefile static templates requirements.txt requirements-dev.txt setup.py README.md notebooks \
+		looper Makefile static templates requirements.txt requirements-dev.txt setup.py README.md sfx notebooks \
 		pi:/home/pi/looper/
 
 remote-run:

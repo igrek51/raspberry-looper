@@ -109,7 +109,7 @@ function refreshTrackVolume(trackId) {
 
 function setupVolumeSlider(sliderId, buttonSetId, buttonM1Id, buttonP1Id, textInputId, onVolumeSet) {
     $("#"+buttonSetId).click(function () {
-        volume = $('#'+textInputId).val();
+        volume = $('#'+textInputId).val()
         onVolumeSet(volume)
     })
     var slider = document.getElementById(sliderId)
@@ -150,9 +150,9 @@ function ajaxRequest(type, url, onSuccess) {
         },
         error: function (xhr, status, error) {
             if (xhr.hasOwnProperty('responseJSON') && xhr.responseJSON.hasOwnProperty('error')) { 
-                message = xhr.responseJSON.error;
+                message = xhr.responseJSON.error
             } else {
-                message = xhr.statusText;
+                message = xhr.statusText
             }
             showAlert('Error: ' + message, 'danger')
         }

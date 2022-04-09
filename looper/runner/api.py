@@ -115,6 +115,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def get_track_plot(track_id: int):
         return generate_track_plot(looper.tracks[track_id], looper)
 
+    # Metronome
+    @app.post("/api/metronome/{bpm}/{beats}")
+    async def set_metronome_tracks(bpm: float, beats: int):
+        looper.set_metronome_tracks(bpm, beats)
 
 
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:

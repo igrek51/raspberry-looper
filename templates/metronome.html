@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card bg-light mb-3">
+        <div class="card-header">Metronome</div>
+        <div class="card-body">
+            <div>
+                <div class="input-group mb-4">
+                    <input type="text" class="form-control" placeholder="120 BPM" id="text-bpm">
+                    <span class="input-group-text">BPM</span>
+                    <input type="text" class="form-control" placeholder="Beats per bar" id="text-beats" value="4">
+                    <span class="input-group-text">Beats</span>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-metronome">Setup Loop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // input volume buttons
+    $("#btn-set-metronome").click(function () {
+        bpm = $('#text-bpm').val()
+        beats = $('#text-beats').val()
+        ajaxRequest('post', `/api/metronome/${bpm}/${beats}`, function(data) {
+            showAlert('Metronome track has been added', 'success')
+        })
+    })
+})
+</script>
+{% endblock %}
