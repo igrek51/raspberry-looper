@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 import datetime
+from enum import Enum
 import os
 from typing import Callable, List, Optional
 from pathlib import Path
-import threading
+from threading import Lock
 
 import wave
 import numpy as np
@@ -11,8 +12,6 @@ from pydub import AudioSegment
 from nuclear.sublog import log
 
 from looper.runner.config import Config
-
-lock = threading.Lock()
 
 
 @dataclass
@@ -23,19 +22,26 @@ class Recording:
     filesize_mb: float
 
 
+class RecorderPhase(Enum):
+    IDLE = 1  # not started yet
+    RECORDING = 2  # recording output
+    BUSY = 3  # saving output files, converting 
+
+
 @dataclass
 class OutputRecorder:
     config: Config
     saving: bool = False
+    phase: RecorderPhase = RecorderPhase.IDLE
     chunks_written: int = 0
-
-    def __post_init__(self):
-        self.wav = None
+    wav = None
+    _lock: Lock = Lock()
 
     def start_saving(self):
-        if self.saving:
-            log.warn('Already saving')
+        if self.phase != RecorderPhase.IDLE:
+            log.warn('Recorder is not IDLE')
             return
+        self.phase = RecorderPhase.BUSY
 
         self.filestem = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
         self.wav_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.wav'
@@ -43,24 +49,23 @@ class OutputRecorder:
         log.debug('creating WAV file', path=self.wav_path)
         Path(self.config.output_recordings_dir).mkdir(exist_ok=True, parents=True)
 
-        with lock:
+        with self._lock:
             self.wav = wave.open(str(self.wav_path), 'w')
             self.wav.setnchannels(self.config.channels)
             self.wav.setsampwidth(self.config.format_bytes)
             self.wav.setframerate(self.config.sampling_rate)
 
         self.chunks_written = 0
-        self.saving = True
+        self.phase = RecorderPhase.RECORDING
         log.info('Started saving output to a file')
 
     def stop_saving(self):
-        if not self.saving:
-            log.warn('Already not saving')
+        if self.phase != RecorderPhase.RECORDING:
+            log.warn('Recorder is not RECORDING')
             return
+        self.phase = RecorderPhase.BUSY
 
-        self.saving = False
-
-        with lock:
+        with self._lock:
             self.wav.close()
             self.wav = None
             duration = self.chunks_written * self.config.chunk_length_s
@@ -81,29 +86,28 @@ class OutputRecorder:
             else:
                 self.wav_path.unlink()
 
+        self.phase = RecorderPhase.IDLE
         mp3_filesize_mb = os.path.getsize(mp3_path) / 1024 / 1024
         log.info('output converted to MP3', 
             filename=mp3_path, duration=f'{audio.duration_seconds:.2f}s', 
             wav_size=f'{wav_filesize_mb:.2f}MB', mp3_size=f'{mp3_filesize_mb:.2f}MB')
 
     def toggle_saving(self):
-        if self.saving:
+        if self.phase == RecorderPhase.RECORDING:
             self.stop_saving()
         else:
             self.start_saving()
 
     def transmit(self, chunk: np.array):
-        if not self.saving:
-            return
-        
-        with lock:
-            if self.wav is not None:
-                self.wav.writeframes(b''.join(chunk))
-                self.chunks_written += 1
+        if self.phase == RecorderPhase.RECORDING:
+            with self._lock:
+                if self.wav is not None:
+                    self.wav.writeframes(b''.join(chunk))
+                    self.chunks_written += 1
 
     @property
     def recorded_duration(self) -> float:
-        if not self.saving:
+        if self.phase != RecorderPhase.RECORDING:
             return 0
         return self.chunks_written * self.config.chunk_length_s
 

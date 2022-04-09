@@ -66,7 +66,7 @@ function refreshLooperStatus() {
 
 function refreshOutputRecorderStatus() {
     ajaxRequest('get', '/api/recorder', function(data) {
-        $("#recorder-status-saving").html(data.saving.toString())
+        $("#recorder-status-phase").html(data.phase)
         $("#recorder-status-duration").html(data.recorded_duration.toString() + 's')
     })
 }
