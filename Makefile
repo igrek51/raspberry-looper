@@ -10,17 +10,20 @@ setup:
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 
-push-first:
+remote-create-dir:
 	ssh pi "mkdir -p /home/pi/looper"
-	scp -r \
-		looper Makefile requirements.txt requirements-dev.txt setup.py README.md notebooks static templates \
-		pi:/home/pi/looper/
+
+remote-install-package:
 	ssh pi "cd /home/pi/looper &&\
 		pip install -r requirements.txt &&\
 		python setup.py develop --user"
 
+remote-install: remote-create-dir push remote-install-package
+
 push:
-	scp -r looper Makefile static templates pi:/home/pi/looper/
+	rsync -avh --delete --exclude='*.pyc' --exclude='__pycache__' \
+		looper Makefile static templates requirements.txt requirements-dev.txt setup.py README.md notebooks \
+		pi:/home/pi/looper/
 
 run:
 	looper run

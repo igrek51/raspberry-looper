@@ -1,3 +1,4 @@
+from pathlib import Path
 import time
 import threading
 
@@ -54,8 +55,9 @@ def creat_fastapi_app(looper: Looper) -> FastAPI:
     async def status():
         return {"status": "ok"}
 
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    Path('out').mkdir(exist_ok=True)
     app.mount("/out", StaticFiles(directory="out"), name="static_out")
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
     @app.exception_handler(Exception)
     async def error_handler(request: Request, exc: Exception):
