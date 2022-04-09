@@ -3,32 +3,30 @@
 {% block content %}
 <div class="container">
 
-    <div class="card bg-light">
+    <div class="card bg-light mb-3">
         <div class="card-header">Input Volume</div>
         <div class="card-body">
             <p>
                 Amplification: <span id="volume-input-volume"></span>dB
                 <span class="badge bg-secondary text-decoration-line-through" id="label-volume-input-muted">Muted</span>
+                <button type="button" class="btn btn-primary" id="btn-mute-input">Mute</button>
             </p>
             <div>
-                <div class="input-group mb-5">
+                <div class="input-group mb-4">
                     <input type="text" class="form-control" placeholder="Volume [dB]" id="text-input-volume">
                     <span class="input-group-text">dB</span>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume-m1">-1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume-p1">+1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume">Set</button>
                 </div>
-                <div class="mb-5">
+                <div class="mb-4 pb-2">
                     <div id="slider-input-volume"></div>
                 </div>
-            </div>
-            <div>
-                <button type="button" class="btn btn-primary" id="btn-mute-input">Mute</button>
             </div>
         </div>
     </div>
 
-    <div class="card bg-light">
+    <div class="card bg-light mb-3">
         <div class="card-header">Tracks Output Volume</div>
         <div class="card-body">
 
@@ -38,19 +36,18 @@
                 <div class="card-body">
                     <p>
                         Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
-                    </p>
-                    <p>
+                        <br />
                         Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
                     </p>
                     <div>
-                        <div class="input-group mb-5">
+                        <div class="input-group mb-4">
                             <input type="text" class="form-control" placeholder="Volume [dB]" id="text-track-{{track_id}}-volume">
                             <span class="input-group-text">dB</span>
                             <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-m1">-1</button>
                             <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-p1">+1</button>
                             <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume">Set</button>
                         </div>
-                        <div class="mb-5">
+                        <div class="mb-4 pb-2">
                             <div id="slider-track-{{track_id}}-volume"></div>
                         </div>
                     </div>
@@ -61,27 +58,25 @@
         </div>
     </div>
 
-    <div class="card bg-light">
+    <div class="card bg-light mb-3">
         <div class="card-header">Master Output Volume</div>
         <div class="card-body">
             <p>
                 Amplification: <span id="volume-output-volume"></span>dB
                 <span class="badge bg-secondary text-decoration-line-through" id="label-volume-output-muted">Muted</span>
+                <button type="button" class="btn btn-primary" id="btn-mute-output">Mute</button>
             </p>
             <div>
-                <div class="input-group mb-5">
+                <div class="input-group mb-4">
                     <input type="text" class="form-control" placeholder="Volume [dB]" id="text-output-volume">
                     <span class="input-group-text">dB</span>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume-m1">-1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume-p1">+1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume">Set</button>
                 </div>
-                <div class="mb-5">
+                <div class="mb-4 pb-2">
                     <div id="slider-output-volume"></div>
                 </div>
-            </div>
-            <div>
-                <button type="button" class="btn btn-primary" id="btn-mute-output">Mute</button>
             </div>
         </div>
     </div>
