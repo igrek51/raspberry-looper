@@ -79,6 +79,7 @@ class OutputRecorder:
             mp3_path = Path(self.config.output_recordings_dir) / f'{self.filestem}.mp3'
 
             audio = AudioSegment.from_wav(str(self.wav_path))
+            audio = normalize_recording(audio, self.config)
             audio.export(str(mp3_path), format='mp3')
 
             if self.config.leave_wav_recordings:
@@ -119,6 +120,18 @@ class OutputRecorder:
             filesize_mb = os.path.getsize(path) / 1024 / 1024
             recordings.append(Recording(path.name, path, str(path), filesize_mb))
         return sorted(recordings, key=lambda r: r.name)
+
+
+def normalize_recording(audio: AudioSegment, config: Config) -> AudioSegment:
+    if config.recorder_max_gain <= 0:
+        return audio
+    volume = audio.max_dBFS
+    gain = -volume
+    if gain > config.recorder_max_gain:
+        gain = config.recorder_max_gain
+    audio = audio.apply_gain(gain)
+    log.info('Volume normalized', volume=f'{volume:.2f}dB', gain=f'{gain:.2f}dB')
+    return audio
 
 
 def save_wav(filename: str, frames_channel: Callable[[], Optional[np.array]], config: Config):

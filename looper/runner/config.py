@@ -13,9 +13,10 @@ class Config:
 
     # Sampling size and format, bit depth (16-bit)
     format = pyaudio.paInt16
-
     # size (in bytes) for the sample format, see pa.get_sample_size(config.format)
     format_bytes: int = 2
+    # full-scale amplitude (2**16/2-1)
+    max_amplitude: int = 32767
 
     # index of input device
     in_device: int = 1
@@ -40,16 +41,15 @@ class Config:
     # Offline mode - without Raspberry Pi pins nor audio devices
     offline: bool = False
 
-    output_recordings_dir: str = "out/recordings"
-
-    leave_wav_recordings: bool = True
-
     workdir: str = '/home/pi/looper'
 
     http_port: int = 8000
 
-    # full-scale amplitude (2**16/2-1)
-    max_amplitude: int = 32767
+    # Output Recorder
+    output_recordings_dir: str = "out/recordings"
+    leave_wav_recordings: bool = True
+    # max gain in dB to normalize recorded output
+    recorder_max_gain: float = 30
 
 
     @property
