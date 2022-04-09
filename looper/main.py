@@ -1,9 +1,9 @@
 from nuclear.sublog import logerr
 from nuclear import CliBuilder
-from looper.devices import list_devices
-from looper.latency import measure_latency
 
-from looper.wire import wire_input_output
+from looper.check.devices import list_devices
+from looper.check.latency import measure_latency
+from looper.check.wire import wire_input_output
 from looper.runner.runner import run_looper
 
 

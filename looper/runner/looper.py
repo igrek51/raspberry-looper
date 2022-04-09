@@ -7,7 +7,7 @@ from threading import Lock
 from nuclear.sublog import log
 import pyaudio
 import numpy as np
-from looper.devices import verify_device_index
+from looper.check.devices import verify_device_index
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
