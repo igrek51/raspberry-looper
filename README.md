@@ -17,7 +17,7 @@ Our chief weapons are:
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)
 
-Web application available at http://pi:8000:
+Web application available at http://pi:8000 in your WiFi network:
 
 ![](./docs/img/screen-tracks.png)
 
