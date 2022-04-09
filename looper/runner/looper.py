@@ -2,6 +2,7 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import List
 from enum import Enum
+from threading import Lock
 
 from nuclear.sublog import log
 import pyaudio
@@ -33,6 +34,7 @@ class Looper:
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
     dsp: SignalProcessor = None
+    _lock: Lock = Lock()
 
     @property
     def loop_chunks_num(self) -> int:
@@ -49,15 +51,15 @@ class Looper:
         return self.current_position / len(self.master_chunks)
 
     def reset(self):
-        self.phase = LoopPhase.VOID
-        self.current_position = 0
-        self.master_chunks = []
-        tracks = []
-        for track_id in range(self.config.tracks_num):
-            has_gpio = track_id < self.config.tracks_gpio_num
-            track = Track(track_id, self.config, has_gpio)
-            tracks.append(track)
-        self.tracks = tracks
+        with self._lock:
+            self.phase = LoopPhase.VOID
+            self.current_position = 0
+            self.master_chunks = []
+            self.tracks = []
+            for track_id in range(self.config.tracks_num):
+                has_gpio = track_id < self.config.tracks_gpio_num
+                track = Track(track_id, self.config, has_gpio)
+                self.tracks.append(track)
 
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
@@ -73,22 +75,23 @@ class Looper:
                 input_chunk = np.frombuffer(in_data, dtype=np.int16)
                 input_chunk = self.dsp.amplify(input_chunk, self.input_volume)
 
-            # just listening to the input
-            if self.phase == LoopPhase.VOID:
-                out_chunk = input_chunk
+            with self._lock:
+                # just listening to the input
+                if self.phase == LoopPhase.VOID:
+                    out_chunk = input_chunk
 
-            # Recording master loop
-            if self.phase == LoopPhase.RECORDING_MASTER:
-                if self.loop_chunks_num < self.config.max_loop_chunks:
-                    self.master_chunks.append(input_chunk)
-                out_chunk = input_chunk
+                # Recording master loop
+                if self.phase == LoopPhase.RECORDING_MASTER:
+                    if self.loop_chunks_num < self.config.max_loop_chunks:
+                        self.master_chunks.append(input_chunk)
+                    out_chunk = input_chunk
 
-            # Loop playback + Overdub
-            if self.phase == LoopPhase.LOOP:
-                # Play input with recorded loops
-                out_chunk = self.current_playback(input_chunk)
-                self.overdub(input_chunk)
-                self.next_chunk()
+                # Loop playback + Overdub
+                if self.phase == LoopPhase.LOOP:
+                    # Play input with recorded loops
+                    out_chunk = self.current_playback(input_chunk)
+                    self.overdub(input_chunk)
+                    self.next_chunk()
 
             self.recorder.transmit(out_chunk)
             return out_chunk, pyaudio.paContinue
@@ -179,19 +182,21 @@ class Looper:
         self.update_leds()
 
     def start_recording_master(self):
-        self.master_chunks = []
-        self.phase = LoopPhase.RECORDING_MASTER
+        with self._lock:
+            self.master_chunks = []
+            self.phase = LoopPhase.RECORDING_MASTER
         log.debug('recording master loop...')
 
     def stop_recording_master(self):
-        self.current_position = 0
-        for track in self.tracks:
-            if track.index == 0:
-                track.playing = True
-                track.set_track(self.master_chunks)
-            else:
-                track.set_empty(self.loop_chunks_num)
-        self.phase = LoopPhase.LOOP
+        with self._lock:
+            self.current_position = 0
+            for track in self.tracks:
+                if track.index == 0:
+                    track.playing = True
+                    track.set_track(self.master_chunks)
+                else:
+                    track.set_empty(self.loop_chunks_num)
+            self.phase = LoopPhase.LOOP
 
         loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
         loudness = self.dsp.compute_loudness(self.master_chunks)  # should be below 0
@@ -260,9 +265,10 @@ class Looper:
         self.config.tracks_num += 1
         has_gpio = track_id < self.config.tracks_gpio_num
         track = Track(track_id, self.config, has_gpio)
-        self.tracks.append(track)
-        if self.phase == LoopPhase.LOOP:
-            track.set_empty(self.loop_chunks_num)
+        with self._lock:
+            self.tracks.append(track)
+            if self.phase == LoopPhase.LOOP:
+                track.set_empty(self.loop_chunks_num)
         log.info('new track added', tracks_num=self.config.tracks_num)
 
     def toggle_input_mute(self):
