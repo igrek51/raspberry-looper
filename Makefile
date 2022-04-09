@@ -5,6 +5,7 @@ setup:
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
 	pip install -r requirements.txt &&\
+	pip install -r requirements-dev.txt &&\
 	python setup.py develop --user
 	@echo Activate your venv:
 	@echo . venv/bin/activate
@@ -19,7 +20,7 @@ push-first:
 		python setup.py develop --user"
 
 push:
-	scp -r looper Makefile templates pi:/home/pi/looper/
+	scp -r looper Makefile static templates pi:/home/pi/looper/
 
 run:
 	looper run
