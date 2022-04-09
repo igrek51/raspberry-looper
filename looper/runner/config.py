@@ -51,6 +51,9 @@ class Config:
     # max gain in dB to normalize recorded output
     recorder_max_gain: float = 30
 
+    # Sessions
+    output_sessions_dir: str = "out/sessions"
+
 
     @property
     def chunk_length_ms(self) -> float:

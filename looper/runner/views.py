@@ -1,9 +1,11 @@
+import datetime
 from typing import Dict
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from looper.runner.looper import Looper
+from looper.runner.sessions import SessionManager
 
 
 def setup_web_views(app: FastAPI, looper: Looper):
@@ -52,3 +54,11 @@ def setup_web_views(app: FastAPI, looper: Looper):
     @app.get("/manage", response_class=HTMLResponse)
     async def view_manage(request: Request):
         return templates.TemplateResponse("manage.html", _tracks_context(request))
+
+    @app.get("/session", response_class=HTMLResponse)
+    async def view_session(request: Request):
+        return templates.TemplateResponse("session.html", {
+            "request": request,
+            "sessions": SessionManager(looper).list_sessions(),
+            "now": datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S"),
+        })

@@ -31,7 +31,6 @@ class RecorderPhase(Enum):
 @dataclass
 class OutputRecorder:
     config: Config
-    saving: bool = False
     phase: RecorderPhase = RecorderPhase.IDLE
     chunks_written: int = 0
     wav = None
@@ -39,8 +38,7 @@ class OutputRecorder:
 
     def start_saving(self):
         if self.phase != RecorderPhase.IDLE:
-            log.warn('Recorder is not IDLE')
-            return
+            raise RuntimeError('Recorder is not IDLE')
         self.phase = RecorderPhase.BUSY
 
         self.filestem = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -61,8 +59,7 @@ class OutputRecorder:
 
     def stop_saving(self):
         if self.phase != RecorderPhase.RECORDING:
-            log.warn('Recorder is not RECORDING')
-            return
+            raise RuntimeError('Recorder is not RECORDING')
         self.phase = RecorderPhase.BUSY
 
         with self._lock:

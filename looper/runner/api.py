@@ -5,6 +5,7 @@ from nuclear.sublog import log
 
 from looper.runner.looper import Looper
 from looper.runner.plot import generate_track_plot
+from looper.runner.sessions import SessionManager
 
 
 def setup_looper_endpoints(app: FastAPI, looper: Looper):
@@ -12,6 +13,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     @app.get("/api/player")
     async def get_player_status():
         return await _get_player_status(looper)
+
+    @app.post("/api/looper/reset")
+    async def reset_all_tracks():
+        looper.reset()
 
     # Tracks
     @app.get("/api/track")
@@ -132,6 +137,15 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     @app.post("/api/track/{track_id}/name/")
     async def rename_track(track_id: int):
         looper.tracks[track_id].name = ''
+    
+    # Save/Restore Sessions
+    @app.post("/api/session/save/{name}")
+    async def save_session(name: str = ''):
+        SessionManager(looper).save_session(name)
+
+    @app.post("/api/session/restore/{filename}")
+    async def restore_session(filename: str):
+        SessionManager(looper).restore_session(filename)
 
 
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:

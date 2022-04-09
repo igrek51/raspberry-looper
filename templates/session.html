@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card bg-light">
+        <div class="card-header">
+            Save current tracks to Session file
+        </div>
+        <div class="card-body">
+            <div class="input-group mb-4">
+                <span class="input-group-text">Name:</span>
+                <input type="text" class="form-control" placeholder="Session name" id="text-session-name" value="{{now}}">
+                <button class="btn btn-outline-secondary" type="button" id="btn-save-session">Save Session</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card bg-light">
+        <div class="card-header">
+            Restore Session
+        </div>
+        <div class="card-body">
+
+            Saved sessions ({{ sessions | length }}):
+            <ul>
+                {% for session in sessions %}
+                <li>
+                    {{session.filename}} - {{session.filesize_mb | round(3)}} MB
+                    <button type="button" class="btn btn-primary btn-restore-session" data-filename="{{session.filename}}">Restore</button>
+                </li>
+                {% endfor %}
+            </ul>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $("#btn-save-session").click(function () {
+        name = $(`#text-session-name`).val()
+        ajaxRequest('post', `/api/session/save/${name}`, function(data) {
+            showAlert('Session saved', 'success')
+        })
+    })
+
+    $(".btn-restore-session").click(function () {
+        var filename = $(this).attr('data-filename')
+        ajaxRequest('post', `/api/session/restore/${filename}`, function(data) {
+            showAlert('Session restored', 'success')
+        })
+    })
+})
+</script>
+{% endblock %}

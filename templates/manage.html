@@ -24,6 +24,8 @@
             {% endfor %}
 
             <button type="button" class="btn btn-primary" id="btn-add-track">Add track</button>
+            <br />
+            <button type="button" class="btn btn-danger" id="btn-reset-tracks">Reset all tracks</button>
 
         </div>
     </div>
@@ -59,6 +61,12 @@ $(document).ready(function() {
     }
 
     bindNewTrackButton()
+
+    $("#btn-reset-tracks").click(function () {
+        ajaxRequest('post', '/api/looper/reset', function(data) {
+            location.reload()
+        })
+    })
 })
 </script>
 {% endblock %}
