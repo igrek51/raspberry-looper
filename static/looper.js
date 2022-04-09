@@ -74,6 +74,8 @@ function refreshOutputRecorderStatus() {
 function refreshInputVolume() {
     ajaxRequest('get', '/api/volume/input', function(data) {
         $("#volume-input-volume").html(data.volume.toString())
+        slider = document.getElementById('slider-input-volume')
+        slider.noUiSlider.set(data.volume)
         updateElementClass("#label-volume-input-muted", data.muted, "bg-danger", "bg-secondary text-decoration-line-through")
     })
 }
@@ -81,6 +83,8 @@ function refreshInputVolume() {
 function refreshOutputVolume() {
     ajaxRequest('get', '/api/volume/output', function(data) {
         $("#volume-output-volume").html(data.volume.toString())
+        slider = document.getElementById('slider-output-volume')
+        slider.noUiSlider.set(data.volume)
         updateElementClass("#label-volume-output-muted", data.muted, "bg-danger", "bg-secondary text-decoration-line-through")
     })
 }
@@ -94,9 +98,43 @@ function refreshTrackVolumes() {
 function refreshTrackVolume(trackId) {
     ajaxRequest('get', `/api/volume/track/${trackId}`, function(data) {
         $(`#label-track-${trackId}-volume`).html(data.volume.toString())
+        slider = document.getElementById(`slider-track-${trackId}-volume`)
+        slider.noUiSlider.set(data.volume)
     })
     ajaxRequest('get', `/api/volume/track/${trackId}/loudness`, function(data) {
         $(`#label-track-${trackId}-loudness`).html(data.loudness.toString())
+    })
+}
+
+
+function setupVolumeSlider(sliderId, buttonSetId, buttonM1Id, buttonP1Id, textInputId, onVolumeSet) {
+    $("#"+buttonSetId).click(function () {
+        volume = $('#'+textInputId).val();
+        onVolumeSet(volume)
+    })
+    var slider = document.getElementById(sliderId)
+    noUiSlider.create(slider, {
+        start: 0,
+        connect: 'lower',
+        range: {
+            'min': -50,
+            'max': 50
+        },
+        tooltips: true,
+        pips: {mode: 'count', values: 5},
+        keyboardSupport: true,
+        keyboardDefaultStep: 100,
+    })
+    slider.noUiSlider.on('update', function (values, handle) {
+        document.getElementById(textInputId).value = values[handle]
+    })
+    $("#"+buttonM1Id).click(function () {
+        before = parseFloat(slider.noUiSlider.get())
+        slider.noUiSlider.set(before - 1)
+    })
+    $("#"+buttonP1Id).click(function () {
+        before = parseFloat(slider.noUiSlider.get())
+        slider.noUiSlider.set(before + 1)
     })
 }
 

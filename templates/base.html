@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Raspberry Looper</title>
     <link href="{{ url_for('static', path='/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/nouislider.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', path='/looper.css') }}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
@@ -46,6 +48,7 @@
 
 <script src="{{ url_for('static', path='/jquery.min.js') }}"></script>
 <script src="{{ url_for('static', path='/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', path='/nouislider.js') }}"></script>
 <script src="{{ url_for('static', path='/looper.js') }}"></script>
 {% block extra_js %}{% endblock %}
 

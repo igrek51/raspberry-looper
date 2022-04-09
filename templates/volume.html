@@ -9,14 +9,22 @@
             <p>
                 Amplification: <span id="volume-input-volume"></span>dB
                 <span class="badge bg-secondary text-decoration-line-through" id="label-volume-input-muted">Muted</span>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Input volume [dB]" id="input-input-volume">
+            </p>
+            <div>
+                <div class="input-group mb-5">
+                    <input type="text" class="form-control" placeholder="Volume [dB]" id="text-input-volume">
+                    <span class="input-group-text">dB</span>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume-m1">-1</button>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume-p1">+1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-input-volume">Set</button>
                 </div>
-            </p>
-            <p>
+                <div class="mb-5">
+                    <div id="slider-input-volume"></div>
+                </div>
+            </div>
+            <div>
                 <button type="button" class="btn btn-primary" id="btn-mute-input">Mute</button>
-            </p>
+            </div>
         </div>
     </div>
 
@@ -24,25 +32,31 @@
         <div class="card-header">Tracks Output Volume</div>
         <div class="card-body">
 
-            <div class="card-group">
-                {% for track_id in track_ids %}
-                <div class="card text-dark bg-light mb-3">
-                    <div class="card-header">Track {{track_id}}</div>
-                    <div class="card-body">
-                        <p>
-                            Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
-                        </p>
-                        <p>
-                            Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
-                            <div class="input-group mb-3">
-                                <input type="text" class="form-control" placeholder="Output volume [dB]" id="input-track-{{track_id}}-volume">
-                                <button class="btn btn-outline-secondary btn-set-track-volume" type="button" id="btn-set-track-{{track_id}}-volume" track-id="{{track_id}}">Set</button>
-                            </div>
-                        </p>
+            {% for track_id in track_ids %}
+            <div class="card text-dark bg-light mb-3">
+                <div class="card-header">Track {{track_id}}</div>
+                <div class="card-body">
+                    <p>
+                        Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
+                    </p>
+                    <p>
+                        Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
+                    </p>
+                    <div>
+                        <div class="input-group mb-5">
+                            <input type="text" class="form-control" placeholder="Volume [dB]" id="text-track-{{track_id}}-volume">
+                            <span class="input-group-text">dB</span>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-m1">-1</button>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-p1">+1</button>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume">Set</button>
+                        </div>
+                        <div class="mb-5">
+                            <div id="slider-track-{{track_id}}-volume"></div>
+                        </div>
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
 
         </div>
     </div>
@@ -53,14 +67,22 @@
             <p>
                 Amplification: <span id="volume-output-volume"></span>dB
                 <span class="badge bg-secondary text-decoration-line-through" id="label-volume-output-muted">Muted</span>
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Output volume [dB]" id="input-output-volume">
+            </p>
+            <div>
+                <div class="input-group mb-5">
+                    <input type="text" class="form-control" placeholder="Volume [dB]" id="text-output-volume">
+                    <span class="input-group-text">dB</span>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume-m1">-1</button>
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume-p1">+1</button>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-output-volume">Set</button>
                 </div>
-            </p>
-            <p>
+                <div class="mb-5">
+                    <div id="slider-output-volume"></div>
+                </div>
+            </div>
+            <div>
                 <button type="button" class="btn btn-primary" id="btn-mute-output">Mute</button>
-            </p>
+            </div>
         </div>
     </div>
 
@@ -73,37 +95,60 @@ tracks_num = {{track_ids|length}}
 
 $(document).ready(function() {
     // input volume buttons
-    $("#btn-set-input-volume").click(function () {
-        volume = $('#input-input-volume').val();
-        ajaxRequest('post', `/api/volume/input/set/${volume}`, function(data) {
-            refreshInputVolume()
-        })
-    })
     $("#btn-mute-input").click(function () {
         ajaxRequest('post', '/api/volume/input/mute', function(data) {
             refreshInputVolume()
         })
     })
+    setupVolumeSlider(
+        'slider-input-volume', 
+        'btn-set-input-volume', 
+        'btn-set-input-volume-m1', 
+        'btn-set-input-volume-p1', 
+        'text-input-volume', 
+        function(volume) {
+            ajaxRequest('post', `/api/volume/input/set/${volume}`, function(data) {
+                refreshInputVolume()
+            })
+        }
+    )
+
     // output volume buttons
-    $("#btn-set-output-volume").click(function () {
-        volume = $('#input-output-volume').val();
-        ajaxRequest('post', `/api/volume/output/set/${volume}`, function(data) {
-            refreshOutputVolume()
-        })
-    })
     $("#btn-mute-output").click(function () {
         ajaxRequest('post', '/api/volume/output/mute', function(data) {
             refreshOutputVolume()
         })
     })
+    setupVolumeSlider(
+        'slider-output-volume', 
+        'btn-set-output-volume', 
+        'btn-set-output-volume-m1', 
+        'btn-set-output-volume-p1', 
+        'text-output-volume', 
+        function(volume) {
+            ajaxRequest('post', `/api/volume/output/set/${volume}`, function(data) {
+                refreshOutputVolume()
+            })
+        }
+    )
+
     // track volume buttons
-    $(".btn-set-track-volume").click(function () {
-        var trackId = $(this).attr('track-id')
-        volume = $(`#input-track-${trackId}-volume`).val();
-        ajaxRequest('post', `/api/volume/track/${trackId}/set/${volume}`, function(data) {
-            refreshTrackVolume(trackId)
-        })
-    })
+    for (var trackId = 0; trackId < tracks_num; trackId++) {
+        setupVolumeSlider(
+            `slider-track-${trackId}-volume`,
+            `btn-set-track-${trackId}-volume`,
+            `btn-set-track-${trackId}-volume-m1`,
+            `btn-set-track-${trackId}-volume-p1`,
+            `text-track-${trackId}-volume`,
+            (function(trackId) {
+                return function(volume) {
+                    ajaxRequest('post', `/api/volume/track/${trackId}/set/${volume}`, function(data) {
+                        refreshTrackVolume(trackId)
+                    })
+                }
+            })(trackId)
+        )
+    }
 
     refreshInputVolume()
     refreshOutputVolume()

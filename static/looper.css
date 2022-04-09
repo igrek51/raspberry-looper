@@ -1,0 +1,9 @@
+.noUi-pips-horizontal {
+    height: 40px;
+}
+#slider-input-volume .noUi-connect {
+	background: #52be48;
+}
+#slider-output-volume .noUi-connect {
+	background: #d43a29;
+}
