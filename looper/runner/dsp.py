@@ -29,7 +29,8 @@ class SignalProcessor:
 
     def amplify(self, chunk: np.array, volume: float) -> np.array:
         """Amplify by a given volume in root-power decibels"""
-        return chunk * 10 ** (volume / 20)
+        result = chunk * 10 ** (volume / 20)
+        return result.astype(np.int16)
 
     def compute_chunk_loudness(self, chunk: np.array) -> float:
         """Compute loudness in decibels relative to full scale (dBFS)"""
