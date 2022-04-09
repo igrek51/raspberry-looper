@@ -7,11 +7,11 @@
         <div class="card-header">Track Plots</div>
         <div class="card-body">
 
-            {% for track_id in track_ids %}
+            {% for track in tracks %}
             <div class="card text-dark bg-light mb-3">
-                <div class="card-header">Track {{track_id+1}}</div>
+                <div class="card-header">Track {{track.index + 1}}: {{track.name}}</div>
                 <div class="card-body p-0">
-                    <img src="/api/plot/track/{{track_id}}" style="max-width: 100%;" />
+                    <img src="/api/plot/track/{{track.index}}" style="max-width: 100%;" />
                 </div>
             </div>
             {% endfor %}

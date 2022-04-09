@@ -30,25 +30,25 @@
         <div class="card-header">Tracks Output Volume</div>
         <div class="card-body">
 
-            {% for track_id in track_ids %}
+            {% for track in tracks %}
             <div class="card text-dark bg-light mb-3">
-                <div class="card-header">Track {{track_id+1}}</div>
+                <div class="card-header">Track {{track.index + 1}}: {{track.name}}</div>
                 <div class="card-body">
                     <p>
-                        Track loudness: <span id="label-track-{{track_id}}-loudness"></span>dB
+                        Track loudness: <span id="label-track-{{track.index}}-loudness"></span>dB
                         <br />
-                        Amplification: <span id="label-track-{{track_id}}-volume"></span>dB
+                        Amplification: <span id="label-track-{{track.index}}-volume"></span>dB
                     </p>
                     <div>
                         <div class="input-group mb-4">
-                            <input type="text" class="form-control" placeholder="Volume [dB]" id="text-track-{{track_id}}-volume">
+                            <input type="text" class="form-control" placeholder="Volume [dB]" id="text-track-{{track.index}}-volume">
                             <span class="input-group-text">dB</span>
-                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-m1">-1</button>
-                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume-p1">+1</button>
-                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track_id}}-volume">Set</button>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track.index}}-volume-m1">-1</button>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track.index}}-volume-p1">+1</button>
+                            <button class="btn btn-outline-secondary" type="button" id="btn-set-track-{{track.index}}-volume">Set</button>
                         </div>
                         <div class="mb-4 pb-2">
-                            <div id="slider-track-{{track_id}}-volume"></div>
+                            <div id="slider-track-{{track.index}}-volume"></div>
                         </div>
                     </div>
                 </div>
@@ -86,7 +86,7 @@
 
 {% block extra_js %}
 <script>
-tracks_num = {{track_ids|length}}
+tracks_num = {{tracks_num}}
 
 $(document).ready(function() {
     // input volume buttons

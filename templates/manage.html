@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card bg-light mb-3">
+        <div class="card-header">Manage tracks</div>
+        <div class="card-body">
+
+            {% for track in tracks %}
+            <div class="card text-dark bg-light mb-3">
+                <div class="card-header">Track {{track.index + 1}}: {{track.name}}</div>
+                <div class="card-body">
+                    <div>
+                        <div class="input-group mb-4">
+                            <span class="input-group-text">Name:</span>
+                            <input type="text" class="form-control" placeholder="Name" id="text-track-{{track.index}}-name" value="{{track.name}}">
+                            <button class="btn btn-outline-secondary" type="button" id="btn-rename-track-{{track.index}}">Set</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-danger" id="btn-remove-track-{{track.index}}">Delete track</button>
+                </div>
+            </div>
+            {% endfor %}
+
+            <button type="button" class="btn btn-primary" id="btn-add-track">Add track</button>
+
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+tracks_num = {{tracks_num}}
+
+$(document).ready(function() {
+    for (var track_id = 0; track_id < tracks_num; track_id++) {
+        action = (function(track_id) {
+            return function () {
+                name = $(`#text-track-${track_id}-name`).val()
+                ajaxRequest('post', `api/track/${track_id}/name/${name}`, function(data) {
+                    showAlert('Track name changed', 'success')
+                })
+            }
+        })(track_id)
+        $(`#btn-rename-track-${track_id}`).click(action)
+
+        action = (function(track_id) {
+            return function () {
+                ajaxRequest('delete', `api/track/${track_id}`, function(data) {
+                    location.reload()
+                })
+            }
+        })(track_id)
+        $(`#btn-remove-track-${track_id}`).click(action)
+    }
+
+    bindNewTrackButton()
+})
+</script>
+{% endblock %}

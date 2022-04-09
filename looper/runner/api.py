@@ -38,6 +38,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def add_new_track():
         return looper.add_track()
 
+    @app.delete("/api/track/{track_id}")
+    async def delete_track(track_id: int):
+        return looper.remove_track(track_id)
+
     # Output Recorder
     @app.get("/api/recorder")
     async def get_output_recorder_status():
@@ -117,8 +121,17 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
 
     # Metronome
     @app.post("/api/metronome/{bpm}/{beats}")
-    async def set_metronome_tracks(bpm: float, beats: int):
+    async def set_metronome_track(bpm: float, beats: int):
         looper.set_metronome_tracks(bpm, beats)
+
+    # Rename tracks
+    @app.post("/api/track/{track_id}/name/{name}")
+    async def rename_track(track_id: int, name: str):
+        looper.tracks[track_id].name = name
+
+    @app.post("/api/track/{track_id}/name/")
+    async def rename_track(track_id: int):
+        looper.tracks[track_id].name = ''
 
 
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:
@@ -127,17 +140,13 @@ async def _get_track_info(looper: Looper, track_id: int) -> Dict:
         'recording': looper.is_recording(track_id),
         'playing': looper.tracks[track_id].playing,
         'empty': looper.tracks[track_id].empty,
+        'name': looper.tracks[track_id].name,
     }
 
 
 async def _get_all_tracks_info(looper: Looper) -> Iterable[Dict]:
     for track in looper.tracks:
-        yield {
-            'index': track.index,
-            'recording': track.recording,
-            'playing': track.playing,
-            'empty': track.empty,
-        }
+        yield await _get_track_info(looper, track.index)
 
 
 async def _get_player_status(looper: Looper) -> Dict:

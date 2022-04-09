@@ -1,3 +1,4 @@
+from typing import Dict
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -12,32 +13,30 @@ def setup_web_views(app: FastAPI, looper: Looper):
     async def home():
         return RedirectResponse("/looper")
 
-    @app.get("/looper", response_class=HTMLResponse)
-    async def view_looper(request: Request):
-        return templates.TemplateResponse("looper.html", {
+    def _tracks_context(request: Request) -> Dict:
+        return {
             "request": request,
             "track_ids": list(range(looper.config.tracks_num)),
-        })
+            "tracks_num": looper.config.tracks_num,
+            "tracks": looper.tracks,
+        }
+
+
+    @app.get("/looper", response_class=HTMLResponse)
+    async def view_looper(request: Request):
+        return templates.TemplateResponse("looper.html", _tracks_context(request))
 
     @app.get("/master", response_class=HTMLResponse)
     async def view_master(request: Request):
-        return templates.TemplateResponse("master.html", {
-            "request": request,
-        })
+        return templates.TemplateResponse("master.html", _tracks_context(request))
 
     @app.get("/volume", response_class=HTMLResponse)
     async def view_volume(request: Request):
-        return templates.TemplateResponse("volume.html", {
-            "request": request,
-            "track_ids": list(range(looper.config.tracks_num)),
-        })
+        return templates.TemplateResponse("volume.html", _tracks_context(request))
 
     @app.get("/plot", response_class=HTMLResponse)
     async def view_volume(request: Request):
-        return templates.TemplateResponse("plot.html", {
-            "request": request,
-            "track_ids": list(range(looper.config.tracks_num)),
-        })
+        return templates.TemplateResponse("plot.html", _tracks_context(request))
 
     @app.get("/recordings", response_class=HTMLResponse)
     async def view_recordings(request: Request):
@@ -48,6 +47,8 @@ def setup_web_views(app: FastAPI, looper: Looper):
 
     @app.get("/metronome", response_class=HTMLResponse)
     async def view_metronome(request: Request):
-        return templates.TemplateResponse("metronome.html", {
-            "request": request,
-        })
+        return templates.TemplateResponse("metronome.html", _tracks_context(request))
+
+    @app.get("/manage", response_class=HTMLResponse)
+    async def view_manage(request: Request):
+        return templates.TemplateResponse("manage.html", _tracks_context(request))

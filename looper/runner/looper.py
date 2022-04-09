@@ -284,6 +284,19 @@ class Looper:
                 track.set_empty(self.loop_chunks_num)
         log.info('new track added', tracks_num=self.config.tracks_num)
 
+    def remove_track(self, track_id: int):
+        if self.config.tracks_num == 1:
+            raise RuntimeError('can not remove last track')
+        if track_id >= self.config.tracks_num:
+            raise RuntimeError(f'track {track_id} does not exist')
+
+        with self._lock:
+            self.config.tracks_num -= 1
+            self.tracks.pop(track_id)
+            for track_id in range(self.config.tracks_num):
+                self.tracks[track_id].index = track_id
+        log.info('track has been removed', track_id=track_id)
+
     def set_metronome_tracks(self, bpm: float, beats: int = 4):
         if self.phase != LoopPhase.VOID:
             raise RuntimeError('loop has to be empty to add metronome track')

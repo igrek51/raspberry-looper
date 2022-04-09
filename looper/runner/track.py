@@ -18,6 +18,7 @@ class Track:
     playing: bool = False
     empty: bool = True
     volume: float = 0  # dB
+    name: str = ''
     loop_chunks: List[np.array] = field(default_factory=list)
     recording_from: int = -1
     dsp: SignalProcessor = None
