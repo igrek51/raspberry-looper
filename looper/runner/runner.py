@@ -25,10 +25,7 @@ def run_looper():
         out_device=config.out_device,
         channels=config.channels,
     )
-    if Path(config.workdir).is_dir():
-        os.chdir(config.workdir)
-    else:
-        log.warn(f"can't change working directory to {config.workdir}")
+    _change_workdir(config.workdir)
 
     try:
         pinout = Pinout()
@@ -53,15 +50,31 @@ def run_looper():
         server.stop()
 
 
+def _change_workdir(workdir: str):
+    if Path(workdir).is_dir():
+        os.chdir(workdir)
+    else:
+        log.warn(f"can't change working directory to {workdir}")
+
+
 async def main_async_loop(looper: Looper):
     await asyncio.gather(
         progress_loop(looper),
+        update_leds_loop(looper),
     )
 
 
 async def progress_loop(looper: Looper):
     while True:
         await looper.update_progress()
+
+
+async def update_leds_loop(looper: Looper):
+    if looper.config.offline:
+        return
+    while True:
+        looper.update_leds()
+        await asyncio.sleep(1)
 
 
 def shutdown(looper: Looper):
