@@ -25,7 +25,7 @@ Web application available at http://pi:8000 in your WiFi network:
 
 ![](./docs/img/screen-volume.png)
 
-![](./docs/img/screen-recorder.png)
+Check out [sample recording](https://raw.githubusercontent.com/igrek51/raspberry-looper/master/docs/example/list_2022-04-21_remaster.mp3)
 
 ## Setup
 You're going to need:
