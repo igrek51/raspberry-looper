@@ -2,7 +2,7 @@
 Audio track looper running on Raspberry Pi 
 for playing multi-instrumental songs on your own.
 You can record and play tracks using physical buttons and LEDs
-as well as web application through WiFi,
+as well as a web application through WiFi,
 which provides more advanced functions.
 
 ## Features
@@ -17,6 +17,8 @@ Our chief weapons are:
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)
 
+Web application available at http://pi:8000:
+
 ![](./docs/img/screen-tracks.png)
 
 ![](./docs/img/screen-plot.png)
@@ -25,23 +27,22 @@ Our chief weapons are:
 
 ![](./docs/img/screen-recorder.png)
 
-## Hardware
+## Setup
 You're going to need:
 
-- Raspberry Pi (eg. 3B model) or other compatible board
+- Raspberry Pi 3 or other compatible board
 - USB soundcard with 1 input and 1 output
 
-## Setup
 On the Raspberry Pi:
 
-1. Flash official RaspiOS `2022-04-04-raspios-bullseye-armhf.img` on SD.  
+1. Flash official [RaspiOS](https://www.raspberrypi.com/software/operating-systems/) `2022-04-04-raspios-bullseye-armhf.img` on SD.  
    Plug in USB soundcard with input and output.
 2. Boot Raspberry, let it reboot (expand filesystem), configure WiFi, change user password.
 3. Enable SSH: `sudo raspi-config` / Interface Options / SSH
 
-On the host:
+On your host:
 
-4. Log in the Raspberry Pi:
+4. Log in to the Raspberry Pi:
     ```bash
     ssh-keygen -f "$HOME/.ssh/known_hosts" -R "192.168.0.51"
     ssh pi@192.168.0.51 "mkdir -p /home/pi/.ssh"
@@ -55,14 +56,14 @@ On the host:
         HostName 192.168.0.51
         User pi
     ```
-    From now on you can log in with `ssh pi`.
+    From now on you can log in with `ssh pi` command.
 
 On the Raspberry Pi:
 
-6. Install pyaudio: `sudo apt install python3-pyaudio` (on RaspberryPi).  
-    On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197)
+6. Install pyaudio: `sudo apt install python3-pyaudio`.  
+   (On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197))
 
-7. Install `sudo apt install libatlas-base-dev`
+7. Install: `sudo apt install libatlas-base-dev`
 
 8. Setup volume levels with `alsamixer`:
     - F6, 
@@ -73,15 +74,13 @@ On the Raspberry Pi:
 
 On the host:
 
-9. Run `make remote-install` to push source code.
+9. Run `make remote-install` to push the source code.
 
 10. Log in again via SSH to reload `~/.profile`.
 
 On Raspberry Pi:
 
-11. Run `looper run`.
-
-12. (Optional) Add looper to autostart:
+11. Add looper to autostart:
 ```bash
 mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
@@ -90,6 +89,8 @@ Type=Application
 Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
+
+12. Reboot or run `looper run`.
 
 ## Usage
 Run `looper --help` to see available commands.
@@ -115,5 +116,5 @@ Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && mak
 
 ## References
 - Inspired by [raspi-looper](https://github.com/RandomVertebrate/raspi-looper)
-- [PyAudio docs](http://people.csail.mit.edu/hubert/pyaudio/#docs)
-- [Raspberry GPIO controls](https://gpiozero.readthedocs.io/en/stable/recipes.html)
+- Recording and playing audio in Python: [PyAudio docs](http://people.csail.mit.edu/hubert/pyaudio/#docs)
+- Controlling buttons and LEDs: [Raspberry GPIO controls](https://gpiozero.readthedocs.io/en/stable/recipes.html)
