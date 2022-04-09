@@ -1,8 +1,9 @@
 # Raspberry Looper
 Audio track looper running on Raspberry Pi.
+It is controlled by physical buttons and LEDs,
+more functions are provided by frontend through WiFi.
 
 ## Setup
-
 On the Raspberry Pi:
 
 1. Flash official RaspiOS `2022-04-04-raspios-bullseye-armhf.img` on SD.  
@@ -62,8 +63,16 @@ Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
 
-## Logs
-Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
+## Examples
+![](./docs/img/device-in-action-labelled.jpg)
+
+![](./docs/img/screen-tracks.jpg)
+
+![](./docs/img/screen-plot.jpg)
+
+![](./docs/img/screen-volume.jpg)
+
+![](./docs/img/screen-recorder.jpg)
 
 ## Usage
 Run `looper --help` to see available commands.
@@ -82,7 +91,10 @@ This gives access to more options like:
 - adjusting the volume levels for the input and each of the tracks, 
 - recording output session to MP3 file and downloading it from there.
 
+## Logs
+Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
+
 ## References
-- https://github.com/RandomVertebrate/raspi-looper
-- http://people.csail.mit.edu/hubert/pyaudio/#docs
-- https://gpiozero.readthedocs.io/en/stable/recipes.html
+- Inspired by [raspi-looper](https://github.com/RandomVertebrate/raspi-looper)
+- [PyAudio docs](http://people.csail.mit.edu/hubert/pyaudio/#docs)
+- [Raspberry GPIO controls](https://gpiozero.readthedocs.io/en/stable/recipes.html)
