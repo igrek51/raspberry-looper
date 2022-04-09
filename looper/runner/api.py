@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from nuclear.sublog import log
 
 from looper.runner.looper import Looper
+from looper.runner.plot import generate_track_plot
 
 
 def setup_looper_endpoints(app: FastAPI, looper: Looper):
@@ -108,6 +109,11 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
         return {
             'loudness': looper.tracks[track_id].compute_loudness(),
         }
+
+    # Track Plots
+    @app.get("/api/plot/track/{track_id}")
+    async def get_track_plot(track_id: int):
+        return generate_track_plot(looper.tracks[track_id], looper)
 
 
 

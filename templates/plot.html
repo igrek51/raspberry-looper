@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <div class="card bg-light mb-3">
+        <div class="card-header">Track Plots</div>
+        <div class="card-body">
+
+            {% for track_id in track_ids %}
+            <div class="card text-dark bg-light mb-3">
+                <div class="card-header">Track {{track_id}}</div>
+                <div class="card-body p-0">
+                    <img src="/api/plot/track/{{track_id}}" style="max-width: 100%;" />
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+</script>
+{% endblock %}

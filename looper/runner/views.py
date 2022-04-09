@@ -32,6 +32,13 @@ def setup_web_views(app: FastAPI, looper: Looper):
             "track_ids": list(range(looper.config.tracks_num)),
         })
 
+    @app.get("/plot", response_class=HTMLResponse)
+    async def view_volume(request: Request):
+        return templates.TemplateResponse("plot.html", {
+            "request": request,
+            "track_ids": list(range(looper.config.tracks_num)),
+        })
+
     @app.get("/recordings", response_class=HTMLResponse)
     async def view_recordings(request: Request):
         return templates.TemplateResponse("recordings.html", {
