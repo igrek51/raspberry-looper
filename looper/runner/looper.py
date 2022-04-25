@@ -274,6 +274,9 @@ class Looper:
                             self.pinout.play_leds[track.index].off()
                         else:
                             self.pinout.play_leds[track.index].blink(on_time=0.1, off_time=0.9)
+                else:
+                    if self.is_recording(track.index):
+                        self.pinout.last_record_led().on()
 
             if self.phase != LoopPhase.LOOP:
                 self.pinout.progress_led.off()

@@ -61,7 +61,7 @@ function refreshTrack(trackId) {
         updateElementClass("#label-track-"+trackId+"-recording", recording, "bg-danger", "bg-secondary text-decoration-line-through")
         updateElementClass("#label-track-"+trackId+"-playing", playing, "bg-success", "bg-secondary text-decoration-line-through")
         updateElementClass("#label-track-"+trackId+"-nonempty", nonempty, "bg-warning text-dark", "bg-secondary text-decoration-line-through")
-        updateElementClass("#label-track-"+trackId+"-active", active, "bg-info text-dark", "bg-secondary text-decoration-line-through")
+        updateElementClass("#label-track-"+trackId+"-active", active, "btn-info", "bg-secondary text-decoration-line-through")
     })
 }
 

@@ -68,3 +68,6 @@ class Pinout:
         on_click: Callable,
     ):
         btn.when_pressed = on_click
+
+    def last_record_led(self) -> LED:
+        return self.record_leds[-1]
