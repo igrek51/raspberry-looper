@@ -94,8 +94,8 @@ class SessionManager:
             looper.config.tracks_num = len(looper.tracks)
             looper.master_chunks = session.tracks[0].loop_chunks
 
-            self.current_position = 0
-            self.phase = LoopPhase.LOOP
+            looper.current_position = 0
+            looper.phase = LoopPhase.LOOP
 
         self.phase = SessionManagerPhase.IDLE
         filesize_mb = os.path.getsize(str(session_path)) / 1024 / 1024

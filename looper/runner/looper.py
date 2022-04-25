@@ -308,7 +308,7 @@ class Looper:
                 if track.index == 0:
                     track.playing = True
                     track.set_track(self.master_chunks)
-                    track.name = f'Metronome {bpm}BPM'
+                    track.name = f'Metronome {int(bpm)}BPM'
                 else:
                     track.set_empty(self.loop_chunks_num)
             self.phase = LoopPhase.LOOP
