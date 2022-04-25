@@ -297,12 +297,12 @@ class Looper:
                 self.tracks[track_id].index = track_id
         log.info('track has been removed', track_id=track_id)
 
-    def set_metronome_tracks(self, bpm: float, beats: int = 4):
+    def set_metronome_tracks(self, bpm: float, beats: int = 4, bars: int = 1):
         if self.phase != LoopPhase.VOID:
             raise RuntimeError('loop has to be empty to add metronome track')
 
         with self._lock:
-            self.master_chunks = Metronome(self.config).generate_beat(bpm, beats)
+            self.master_chunks = Metronome(self.config).generate_beat(bpm, beats, bars)
             self.current_position = 0
             for track in self.tracks:
                 if track.index == 0:

@@ -12,7 +12,7 @@ class Metronome:
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def generate_beat(self, bpm: float, beats: int) -> List[np.array]:
+    def generate_beat(self, bpm: float, beats: int, bars: int) -> List[np.array]:
         chunk_length_s = self.config.chunk_length_s
         beat_period_s = 60 / bpm
         chunks_num = int(beat_period_s * beats / chunk_length_s)
@@ -33,7 +33,7 @@ class Metronome:
         dsp = SignalProcessor(self.config)
         track = dsp.amplify(track, -20)
 
-        return np.split(track, chunks_num)
+        return np.split(track, chunks_num) * bars
 
     def load_wav_array(self, path: Path) -> np.array:
         ifile = wave.open(str(path))

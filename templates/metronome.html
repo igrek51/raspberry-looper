@@ -12,6 +12,8 @@
                     <span class="input-group-text">BPM</span>
                     <input type="text" class="form-control" placeholder="Beats per bar" id="text-beats" value="4">
                     <span class="input-group-text">Beats</span>
+                    <input type="text" class="form-control" placeholder="Number of bars" id="text-bars" value="1">
+                    <span class="input-group-text">Bars</span>
                     <button class="btn btn-outline-secondary" type="button" id="btn-set-metronome">Setup Loop</button>
                 </div>
             </div>
@@ -27,7 +29,8 @@ $(document).ready(function() {
     $("#btn-set-metronome").click(function () {
         bpm = $('#text-bpm').val()
         beats = $('#text-beats').val()
-        ajaxRequest('post', `/api/metronome/${bpm}/${beats}`, function(data) {
+        bars = $('#text-bars').val()
+        ajaxRequest('post', `/api/metronome/${bpm}/${beats}/${bars}`, function(data) {
             showAlert('Metronome track has been added', 'success')
         })
     })

@@ -125,9 +125,9 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
         return generate_track_plot(looper.tracks[track_id], looper)
 
     # Metronome
-    @app.post("/api/metronome/{bpm}/{beats}")
-    async def set_metronome_track(bpm: float, beats: int):
-        looper.set_metronome_tracks(bpm, beats)
+    @app.post("/api/metronome/{bpm}/{beats}/{bars}")
+    async def set_metronome_track(bpm: float, beats: int, bars: int):
+        looper.set_metronome_tracks(bpm, beats, bars)
 
     # Rename tracks
     @app.post("/api/track/{track_id}/name/{name}")
