@@ -21,6 +21,13 @@ function bindTrackButtons() {
             refreshTrack(trackId)
         })
     })
+
+    $(".button-track-active").click(function () {
+        var trackId = $(this).attr('track-id')
+        ajaxRequest('post', '/api/track/' + trackId + '/active', function(data) {
+            refreshTracks()
+        })
+    })
 }
 
 function bindRecorderButtons() {
@@ -50,9 +57,11 @@ function refreshTrack(trackId) {
         var recording = data.recording
         var playing = data.playing
         var nonempty = !data.empty
+        var active = data.active
         updateElementClass("#label-track-"+trackId+"-recording", recording, "bg-danger", "bg-secondary text-decoration-line-through")
         updateElementClass("#label-track-"+trackId+"-playing", playing, "bg-success", "bg-secondary text-decoration-line-through")
         updateElementClass("#label-track-"+trackId+"-nonempty", nonempty, "bg-warning text-dark", "bg-secondary text-decoration-line-through")
+        updateElementClass("#label-track-"+trackId+"-active", active, "bg-info text-dark", "bg-secondary text-decoration-line-through")
     })
 }
 

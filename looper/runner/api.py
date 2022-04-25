@@ -39,6 +39,10 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
     async def reset_track(track_id: int):
         looper.reset_track(track_id)
 
+    @app.post("/api/track/{track_id}/active")
+    async def set_active_track(track_id: int):
+        looper.active_track = track_id
+
     @app.post("/api/track/add")
     async def add_new_track():
         return looper.add_track()
@@ -155,6 +159,7 @@ async def _get_track_info(looper: Looper, track_id: int) -> Dict:
         'playing': looper.tracks[track_id].playing,
         'empty': looper.tracks[track_id].empty,
         'name': looper.tracks[track_id].name,
+        'active': looper.active_track == track_id,
     }
 
 

@@ -34,6 +34,7 @@ class Looper:
     input_muted: bool = False
     output_volume: float = 0  # dB
     output_muted: bool = False
+    active_track: int = 0  # index of a track controllable by foot switch
     master_chunks: List[np.array] = field(default_factory=list)
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
@@ -60,6 +61,7 @@ class Looper:
             self.current_position = 0
             self.master_chunks = []
             self.tracks = []
+            self.active_track = 0
             for track_id in range(self.config.tracks_num):
                 has_gpio = track_id < self.config.tracks_gpio_num
                 track = Track(track_id, self.config, has_gpio)
@@ -149,6 +151,10 @@ class Looper:
                     on_click=_toggle_play(track.index),
                     on_hold=_reset_track(track.index),
                 )
+        self.pinout.on_button_click(
+            self.pinout.foot_switch,
+            on_click=self.on_footswitch_press,
+        )
 
     def current_playback(self, input_chunk: np.array) -> np.array:
         active_chunks = [track.current_playback(self.current_position)
@@ -185,6 +191,7 @@ class Looper:
             self.stop_recording_master()
 
         elif self.phase == LoopPhase.LOOP:
+            self.active_track = track_id
             if self.tracks[track_id].recording:
                 self.stop_recording(track_id)
             else:
@@ -195,6 +202,7 @@ class Looper:
     def start_recording_master(self):
         with self._lock:
             self.master_chunks = []
+            self.active_track = 0
             self.phase = LoopPhase.RECORDING_MASTER
         log.debug('recording master loop...')
 
@@ -321,6 +329,9 @@ class Looper:
             chunks=self.loop_chunks_num,
             samples=self.loop_chunks_num*self.config.chunk_size,
         )
+    
+    def on_footswitch_press(self):
+        self.toggle_record(self.active_track)
 
     def toggle_input_mute(self):
         self.input_muted = not self.input_muted

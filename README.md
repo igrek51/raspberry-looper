@@ -10,9 +10,11 @@ Our chief weapons are:
 
 - recording and playing unlimited number of tracks,
 - adjusting the volume levels of the input, output and each of the tracks, 
-- recording output session to MP3 file and downloading it from there,
-- visualizing track plots,
+- recording output to MP3 file and downloading it from there,
+- built-in metronome,
+- saving and restoring all tracks to a session file,
 - controlling tracks with physical buttons and web app from a mobile phone,
+- visualizing track plots,
 
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)

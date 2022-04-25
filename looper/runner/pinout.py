@@ -25,9 +25,9 @@ class Pinout:
             Button(2),
         ]
         self.shutdown_button = Button(13)
+        self.foot_switch = Button(19)
 
         self.init_leds()
-
 
     def init_leds(self):
         self.loopback_led.on()
