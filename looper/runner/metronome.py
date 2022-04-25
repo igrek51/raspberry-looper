@@ -5,6 +5,7 @@ import wave
 import numpy as np
 
 from looper.runner.config import Config
+from looper.runner.dsp import SignalProcessor
 
 
 class Metronome:
@@ -28,6 +29,9 @@ class Metronome:
                 _add_track_at_offset(track, beat_high, 0)
             else: # low beat
                 _add_track_at_offset(track, beat_low, beat * samples_per_beat)
+
+        dsp = SignalProcessor(self.config)
+        track = dsp.amplify(track, -20)
 
         return np.split(track, chunks_num)
 
