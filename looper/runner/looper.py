@@ -36,6 +36,7 @@ class Looper:
     output_muted: bool = False
     main_track: int = 0  # index of a track controllable by foot switch
     master_chunks: List[np.array] = field(default_factory=list)
+    tracks_num: int = 0
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
     dsp: SignalProcessor = None
@@ -61,8 +62,9 @@ class Looper:
             self.current_position = 0
             self.master_chunks = []
             self.tracks = []
+            self.tracks_num = self.config.tracks_num
             self.main_track = 0
-            for track_id in range(self.config.tracks_num):
+            for track_id in range(self.tracks_num):
                 has_gpio = track_id < self.config.tracks_gpio_num
                 track = Track(track_id, self.config, has_gpio)
                 self.tracks.append(track)
@@ -70,7 +72,7 @@ class Looper:
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
-        in_device, out_device = find_device_index(self.config.in_device, self.config.out_device, self.config.online, self.pa)
+        in_device, out_device = find_device_index(self.config, self.pa)
         self.recorder = OutputRecorder(self.config)
         self.dsp = SignalProcessor(self.config)
         self.reset()
@@ -252,7 +254,10 @@ class Looper:
             self.pinout.record_leds[track_id].blink(on_time=0.1, off_time=0.1, n=2, background=False)
         log.info('track cleared', track=track_id)
         if all(track.empty for track in self.tracks):
-            self.reset()
+            with self._lock:
+                self.phase = LoopPhase.VOID
+                self.master_chunks = []
+                self.current_position = 0
             log.info('all tracks reset, looper void')
         self.update_leds()
 
@@ -283,26 +288,26 @@ class Looper:
         return self.tracks[track_id].recording or (self.phase == LoopPhase.RECORDING_MASTER and track_id == 0)
 
     def add_track(self):
-        track_id = self.config.tracks_num
-        self.config.tracks_num += 1
+        track_id = self.tracks_num
+        self.tracks_num += 1
         has_gpio = track_id < self.config.tracks_gpio_num
         track = Track(track_id, self.config, has_gpio)
         with self._lock:
             self.tracks.append(track)
             if self.phase == LoopPhase.LOOP:
                 track.set_empty(self.loop_chunks_num)
-        log.info('new track added', tracks_num=self.config.tracks_num)
+        log.info('new track added', tracks_num=self.tracks_num)
 
     def remove_track(self, track_id: int):
-        if self.config.tracks_num == 1:
+        if self.tracks_num == 1:
             raise RuntimeError('can not remove last track')
-        if track_id >= self.config.tracks_num:
+        if track_id >= self.tracks_num:
             raise RuntimeError(f'track {track_id} does not exist')
 
         with self._lock:
-            self.config.tracks_num -= 1
+            self.tracks_num -= 1
             self.tracks.pop(track_id)
-            for track_id in range(self.config.tracks_num):
+            for track_id in range(self.tracks_num):
                 self.tracks[track_id].index = track_id
         log.info('track has been removed', track_id=track_id)
 

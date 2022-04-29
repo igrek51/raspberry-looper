@@ -1,6 +1,7 @@
 from typing import Tuple, Dict
 
 import pyaudio
+from looper.runner.config import Config
 from nuclear.sublog import log
 
 
@@ -44,8 +45,10 @@ def verify_device_index(device_index: int, pa: pyaudio.PyAudio):
     assert info.get('maxOutputChannels', 0) > 0, 'device has no output channels'
 
 
-def find_device_index(in_device: int, out_device: int, online: bool, pa: pyaudio.PyAudio) -> Tuple[int, int]:
-    if online:
+def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
+    in_device = config.in_device
+    out_device = config.out_device
+    if config.online:
         if in_device == out_device:
             verify_device_index(in_device, pa)
         return in_device, out_device

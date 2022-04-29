@@ -18,8 +18,8 @@ def setup_web_views(app: FastAPI, looper: Looper):
     def _tracks_context(request: Request) -> Dict:
         return {
             "request": request,
-            "track_ids": list(range(looper.config.tracks_num)),
-            "tracks_num": looper.config.tracks_num,
+            "track_ids": list(range(looper.tracks_num)),
+            "tracks_num": looper.tracks_num,
             "tracks": looper.tracks,
         }
 

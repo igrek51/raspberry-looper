@@ -91,7 +91,7 @@ class SessionManager:
                 track.recording = False
                 track.playing = False
 
-            looper.config.tracks_num = len(looper.tracks)
+            looper.tracks_num = len(looper.tracks)
             looper.master_chunks = session.tracks[0].loop_chunks
 
             looper.current_position = 0
