@@ -6,7 +6,17 @@ setup:
 	pip install --upgrade pip setuptools &&\
 	pip install -r requirements.txt &&\
 	pip install -r requirements-dev.txt &&\
-	python setup.py develop --user
+	python setup.py develop
+	@echo Activate your venv:
+	@echo . venv/bin/activate
+
+setup-python3.8:
+	python3.8 -m venv venv &&\
+	. venv/bin/activate &&\
+	pip install --upgrade pip setuptools &&\
+	pip install -r requirements.txt &&\
+	pip install -r requirements-dev.txt &&\
+	python setup.py develop
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 

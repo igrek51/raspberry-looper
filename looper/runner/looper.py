@@ -7,7 +7,7 @@ from threading import Lock
 from nuclear.sublog import log
 import pyaudio
 import numpy as np
-from looper.check.devices import verify_device_index
+from looper.check.devices import find_device_index
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
@@ -70,8 +70,7 @@ class Looper:
     def run(self) -> None:
         log.debug("Initializing PyAudio...")
         self.pa = pyaudio.PyAudio()
-        if self.config.online and self.config.in_device == self.config.out_device:
-            verify_device_index(self.config.in_device, self.pa)
+        in_device, out_device = find_device_index(self.config.in_device, self.config.out_device, self.config.online, self.pa)
         self.recorder = OutputRecorder(self.config)
         self.dsp = SignalProcessor(self.config)
         self.reset()
@@ -109,26 +108,24 @@ class Looper:
             self.recorder.transmit(out_chunk)
             return out_chunk, pyaudio.paContinue
 
-        if self.config.offline:
-            return
-
         self.loop_stream = self.pa.open(
             format=self.config.format,
             channels=self.config.channels,
             rate=self.config.sampling_rate,
             input=True,
             output=True,
-            input_device_index=self.config.in_device,
-            output_device_index=self.config.out_device,
+            input_device_index=in_device,
+            output_device_index=out_device,
             frames_per_buffer=self.config.chunk_size,
             start=False,
             stream_callback=stream_callback,
         )
         self.loop_stream.start_stream()
 
-        self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
-        self.update_leds()
-        self.bind_buttons()
+        if self.config.online:
+            self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
+            self.update_leds()
+            self.bind_buttons()
     
     def bind_buttons(self):
         for track in self.tracks:
@@ -365,7 +362,7 @@ class Looper:
         log.debug('closing looper...')
         if self.config.online:
             self.pinout.init_leds()
-            self.loop_stream.stop_stream()
-            self.loop_stream.close()
+        self.loop_stream.stop_stream()
+        self.loop_stream.close()
         self.pa.terminate()
         log.info('Audio Stream closed')
