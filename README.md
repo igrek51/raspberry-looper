@@ -15,6 +15,7 @@ Our chief weapons are:
 - saving and restoring all tracks to a session file,
 - controlling tracks with physical buttons and web app from a mobile phone,
 - visualizing track plots,
+- running on either Raspberry Pi or a regular PC with Linux,
 
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)
@@ -30,6 +31,8 @@ Web application available at http://pi:8000 in your WiFi network:
 Check out [sample recording](https://raw.githubusercontent.com/igrek51/raspberry-looper/master/docs/example/list_2022-04-21_remaster.mp3)
 
 ## Setup
+
+### Running on Raspberry Pi
 You're going to need:
 
 - Raspberry Pi 3 or other compatible board
@@ -93,6 +96,19 @@ EOF
 ```
 
 12. Reboot or run `looper run`.
+
+### Running on PC with Linux
+Looper can run on a regular PC with Linux in a mode without controlling buttons and LEDs
+(cause there is no GPIO module). The application can be still controlled by a web browser.
+
+You need Python 3.8 or higher 
+(at this moment pyaudio has some issues with Python 3.10, so 3.8, 3.9 versions are recommended).
+
+1. Install required libraries:  
+  `sudo apt install python3-pyaudio` (On Debian: `sudo apt install portaudio19-dev`)  
+  `sudo apt install libatlas-base-dev`
+2. Create virtualenv and setup python project with `make setup`. Activate virtualenv: `. venv/bin/activate`.
+3. Run `looper run` and visit http://localhost:8000 in your browser to see the frontend app.
 
 ## Usage
 Run `looper --help` to see available commands.
