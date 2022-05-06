@@ -43,30 +43,39 @@ def verify_device_index(device_index: int, pa: pyaudio.PyAudio):
     info = pa.get_device_info_by_index(device_index)
     assert info.get('maxInputChannels', 0) > 0, 'device has no input channels'
     assert info.get('maxOutputChannels', 0) > 0, 'device has no output channels'
+    return info
 
 
 def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
     in_device = config.in_device
     out_device = config.out_device
-    if config.online:
+    
+    if in_device >= 0 and out_device >= 0:
         if in_device == out_device:
-            verify_device_index(in_device, pa)
+            device = verify_device_index(in_device, pa)
+            name = device['name']
+            log.info(f'using device "{name}" (index {in_device})')
         return in_device, out_device
+
+    if config.online:
+        default_devices = []
     else:
-        devices = populate_devices(pa)
-        assert devices, 'no devices found'
+        default_devices = ['default', 'pulse', 'sysdefault']
 
-        for devname in ['default', 'pulse', 'sysdefault']:
-            device = devices.get(devname)
-            if device is not None:
-                index = device['index']
-                name = device['name']
-                log.info(f'using device "{name}" (index {index})')
-                return index, index
+    devices = populate_devices(pa)
+    assert devices, 'no devices found'
 
-        # get device with lowest index
-        device = min(devices.values(), key=lambda x: x['index'])
-        index = device['index']
-        name = device['name']
-        log.info(f'using device {name} (index {index})')
-        return index, index
+    for devname in default_devices:
+        device = devices.get(devname)
+        if device is not None:
+            index = device['index']
+            name = device['name']
+            log.info(f'using device "{name}" (index {index})')
+            return index, index
+
+    # get device with lowest index
+    device = min(devices.values(), key=lambda x: x['index'])
+    index = device['index']
+    name = device['name']
+    log.info(f'using device {name} (index {index})')
+    return index, index

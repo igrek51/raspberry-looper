@@ -18,11 +18,11 @@ class Config:
     # full-scale amplitude (2**16/2-1)
     max_amplitude: int = 32767
 
-    # index of input device
-    in_device: int = 1
+    # index of input device, -1 find automatically
+    in_device: int = -1
 
-    # index of output device
-    out_device: int = 1
+    # index of output device, -1 find automatically
+    out_device: int = -1
 
     # mono
     channels: int = 1
