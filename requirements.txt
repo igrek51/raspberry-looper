@@ -1,4 +1,4 @@
-nuclear
+nuclear>=1.2.3
 pyaudio==0.2.11
 numpy==1.22.3
 gpiozero==1.6.2
@@ -7,3 +7,4 @@ fastapi==0.75.0
 uvicorn[standard]==0.17.6
 jinja2==3.1.0
 matplotlib==3.5.1
+scipy==1.8.0

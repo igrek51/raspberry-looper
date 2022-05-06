@@ -1,8 +1,8 @@
 from typing import List
 from pathlib import Path
 
-import wave
 import numpy as np
+from scipy.io import wavfile
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
@@ -36,10 +36,14 @@ class Metronome:
         return np.split(track, chunks_num) * bars
 
     def load_wav_array(self, path: Path) -> np.array:
-        ifile = wave.open(str(path))
-        samples = ifile.getnframes()
-        audio = ifile.readframes(samples)                                                                          
-        return np.frombuffer(audio, dtype=np.int16)
+        samplerate, data = wavfile.read(str(path))
+        assert samplerate == self.config.sampling_rate
+        channels = data.shape[1]
+        if channels > 1:
+            left = data[:, 0]
+            return left
+        return data
+
 
 def _add_track_at_offset(track: np.array, sound: np.array, offset: int):
     for sound_index in range(len(sound)):
