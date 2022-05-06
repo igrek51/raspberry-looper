@@ -210,8 +210,8 @@ class Looper:
             self.current_position = 0
             for track in self.tracks:
                 if track.index == 0:
+                    track.set_track(self.master_chunks, fade=True)
                     track.playing = True
-                    track.set_track(self.master_chunks)
                 else:
                     track.set_empty(self.loop_chunks_num)
             self.phase = LoopPhase.LOOP
@@ -320,8 +320,8 @@ class Looper:
             self.current_position = 0
             for track in self.tracks:
                 if track.index == 0:
+                    track.set_track(self.master_chunks, fade=False)
                     track.playing = True
-                    track.set_track(self.master_chunks)
                     track.name = f'Metronome {int(bpm)}BPM'
                 else:
                     track.set_empty(self.loop_chunks_num)

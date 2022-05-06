@@ -30,9 +30,10 @@ class Track:
         self.loop_chunks = [self.dsp.silence() for i in range(chunks_num)]
         self.empty = True
     
-    def set_track(self, chunks: List[np.array]):
-        self.dsp.fade_in(chunks[0])
-        self.dsp.fade_out(chunks[-1])
+    def set_track(self, chunks: List[np.array], fade: bool):
+        if fade:
+            self.dsp.fade_in(chunks[0])
+            self.dsp.fade_out(chunks[-1])
         self.loop_chunks = chunks
         self.empty = False
 

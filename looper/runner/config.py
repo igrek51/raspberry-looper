@@ -54,6 +54,9 @@ class Config:
     # Sessions
     output_sessions_dir: str = "out/sessions"
 
+    # Metronome
+    metronome_volume: float = -17
+
 
     @property
     def chunk_length_ms(self) -> float:

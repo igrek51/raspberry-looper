@@ -31,7 +31,7 @@ class Metronome:
                 _add_track_at_offset(track, beat_low, beat * samples_per_beat)
 
         dsp = SignalProcessor(self.config)
-        track = dsp.amplify(track, -17)
+        track = dsp.amplify(track, self.config.metronome_volume)
 
         return np.split(track, chunks_num) * bars
 
