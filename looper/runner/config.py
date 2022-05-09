@@ -20,7 +20,6 @@ class Config:
 
     # index of input device, -1 find automatically
     in_device: int = -1
-
     # index of output device, -1 find automatically
     out_device: int = -1
 

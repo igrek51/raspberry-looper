@@ -68,6 +68,7 @@ docker-run: docker-build
 		-p 8000:8000 \
 		--name raspberry-looper \
 		--device /dev/snd \
+		--privileged=true \
 		igrek52/raspberry-looper:latest
 
 docker-push:
