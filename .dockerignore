@@ -1,0 +1,12 @@
+**/venv
+**/.pytest_cache
+**/*.coverage
+**/__pycache__
+**/*.pyc
+**/*.egg-info
+
+**/*.iml
+**/.idea
+**/.vscode
+
+.git

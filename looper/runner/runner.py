@@ -54,7 +54,7 @@ def _change_workdir(workdir: str):
     if Path(workdir).is_dir():
         os.chdir(workdir)
     else:
-        log.warn(f"can't change working directory to {workdir}")
+        log.warn(f"can't change working directory to {workdir}, running in {os.getcwd()}")
 
 
 async def main_async_loop(looper: Looper):

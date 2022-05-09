@@ -58,3 +58,18 @@ list-looper-ps:
 
 pull-notebooks:
 	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/
+
+
+docker-build:
+	DOCKER_BUILDKIT=1 docker build -t igrek52/raspberry-looper:latest -f Dockerfile .
+
+docker-run: docker-build
+	docker run -it --rm \
+		-p 8000:8000 \
+		--name raspberry-looper \
+		--device /dev/snd \
+		igrek52/raspberry-looper:latest
+
+docker-push:
+	docker login -u igrek52
+	docker push igrek52/raspberry-looper:latest
