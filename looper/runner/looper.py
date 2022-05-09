@@ -5,12 +5,10 @@ from enum import Enum
 from threading import Lock
 
 from nuclear.sublog import log
-import pyaudio
-import jack
 import numpy as np
-from looper.check.devices import find_device_index
+from looper.runner.audio_backend import AudioBackend
 
-from looper.runner.config import AudioBackend, Config
+from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
 from looper.runner.metronome import Metronome
 from looper.runner.pinout import Pinout
@@ -40,9 +38,10 @@ class Looper:
     master_chunks: List[np.array] = field(default_factory=list)
     tracks_num: int = 0
     tracks: List[Track] = field(default_factory=list)
+
+    audio_backend: AudioBackend = None
     recorder: OutputRecorder = None
     dsp: SignalProcessor = None
-
     _lock: Lock = Lock()
 
     @property
@@ -76,70 +75,9 @@ class Looper:
         self.recorder = OutputRecorder(self.config)
         self.dsp = SignalProcessor(self.config)
         self.reset()
-
-        if self.config.audio_backend == AudioBackend.PYAUDIO:
-            log.debug('Initializing PyAudio...')
-            self.pa = pyaudio.PyAudio()
-            in_device, out_device = find_device_index(self.config, self.pa)
-
-            def stream_callback(in_data, frame_count, time_info, status_flags):
-                input_chunk = np.frombuffer(in_data, dtype=np.int16)
-                out_chunk = self.stream_audio_chunk(input_chunk)
-                return out_chunk, pyaudio.paContinue
-
-            self.loop_stream = self.pa.open(
-                format=self.config.format,
-                channels=self.config.channels,
-                rate=self.config.sampling_rate,
-                input=True,
-                output=True,
-                input_device_index=in_device,
-                output_device_index=out_device,
-                frames_per_buffer=self.config.chunk_size,
-                start=False,
-                stream_callback=stream_callback,
-            )
-            self.loop_stream.start_stream()
-
-        if self.config.audio_backend == AudioBackend.JACK:
-            log.debug('Initializing JACK...')
-            client = jack.Client('raspberry_looper', no_start_server=False)
-            self.jack_client = client
-            assert client.status.server_started, 'JACK server not started'
-            log.debug('JACK server started')
-            looper_input = client.inports.register('input_2')
-            looper_output = client.outports.register('output_2')
-
-            system_inputs = client.get_ports(is_audio=True, is_output=True, is_physical=True)
-            assert system_inputs, 'No jack inputs found to record from'
-            system_input = system_inputs[-1]
-
-            system_outputs = client.get_ports(is_audio=True, is_input=True, is_physical=True)
-            assert system_outputs, 'No jack outputs found to play to'
-            if len(system_outputs) > 1:
-                system_playback_ports = [system_outputs[-2], system_outputs[-1]]
-            else:
-                system_playback_ports = [system_outputs[-1]]
-            playback_names = [port.name for port in system_playback_ports]
-            log.info('Wiring JACK ports', capture=system_input.name, playback_ports=playback_names)
-
-            @client.set_process_callback
-            def process(blocksize: int):
-                input_chunk: np.ndarray = looper_input.get_array()
-                input_chunk = (input_chunk * self.config.max_amplitude).astype(np.int16)
-                out_chunk = self.stream_audio_chunk(input_chunk)
-                out_chunk = (out_chunk / self.config.max_amplitude).astype(np.float32)
-                looper_output.get_array()[:] = out_chunk
-
-            @client.set_shutdown_callback
-            def shutdown(status, reason):
-                log.info('JACK shutdown', status=status, reason=reason)
-
-            client.activate()
-            client.connect(system_input, looper_input)
-            for playback_port in system_playback_ports:
-                client.connect(looper_output, playback_port)
-
+        self.audio_backend = AudioBackend.make(self.config.audio_backend)
+        self.audio_backend.open(self.config, self.stream_audio_chunk)
+        
         if self.config.online:
             self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
             self.update_leds()
@@ -416,13 +354,4 @@ class Looper:
         log.debug('closing looper...')
         if self.config.online:
             self.pinout.init_leds()
-        if self.config.audio_backend == AudioBackend.PYAUDIO:
-            self.loop_stream.stop_stream()
-            self.loop_stream.close()
-            self.pa.terminate()
-        if self.config.audio_backend == AudioBackend.JACK:
-            self.jack_client.outports.clear()
-            self.jack_client.inports.clear()
-            self.jack_client.deactivate()
-            self.jack_client.close()
-        log.info('Audio Stream closed')
+        self.audio_backend.close()

@@ -3,9 +3,13 @@ from typing import Tuple, Dict
 import pyaudio
 from looper.runner.config import Config
 from nuclear.sublog import log
+from nuclear import shell
 
 
 def list_devices():
+    log.info(f'Listing sound cards (for JACK)')
+    shell('cat /proc/asound/cards')
+
     pa = pyaudio.PyAudio()
     devices_num = pa.get_device_count()
     log.info(f'Found {devices_num} devices.')

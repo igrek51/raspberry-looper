@@ -70,9 +70,14 @@ On the Raspberry Pi:
 
 7. Install: `sudo apt install libatlas-base-dev`
 
-8. Install jack for real-time, low-latency audio streaming: `sudo apt install jackd`
+8. Install JACK for real-time, low-latency audio streaming:  
+  ```bash
+  sudo apt install jackd
+  sudo usermod -a -G audio $USER
+  id -g
+  ```
 
-8. Setup volume levels with `alsamixer`:
+9. Setup volume levels with `alsamixer`:
     - F6, 
     - select USB Audio Device,
     - F5 (to view Playback and Capture), 
@@ -81,13 +86,13 @@ On the Raspberry Pi:
 
 On the host:
 
-9. Run `make remote-install` to push the source code.
+10. Run `make remote-install` to push the source code.
 
-10. Log in again via SSH to reload `~/.profile`.
+11. Log in again via SSH to reload `~/.profile`.
 
 On Raspberry Pi:
 
-11. Add looper to autostart:
+12. Add looper to autostart:
 ```bash
 mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
@@ -97,7 +102,7 @@ Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
 
-12. Reboot or run `looper run`.
+13. Reboot or run `looper run`.
 
 ### Running on PC with Linux
 Looper can run on a regular PC with Linux in a mode without controlling buttons and LEDs
@@ -109,9 +114,14 @@ You need Python 3.8 or higher
 1. Install required libraries:  
   `sudo apt install python3-pyaudio` (On Debian: `sudo apt install portaudio19-dev`)  
   `sudo apt install libatlas-base-dev`  
-  `sudo apt install jackd` (if using JACK audio backend)  
-2. Create virtualenv and setup python project with `make setup`. Activate virtualenv: `. venv/bin/activate`.
-3. Run `looper run` and visit http://localhost:8000 in your browser to see the frontend app.
+2. Install JACK (if about to use JACK audio backend):  
+  ```bash
+  sudo apt install jackd
+  sudo usermod -a -G audio $USER
+  id -g
+  ```
+3. Create virtualenv and setup python project with `make setup`. Activate virtualenv: `. venv/bin/activate`.
+4. Run `looper run` and visit http://localhost:8000 in your browser to see the frontend app.
 
 ## Usage
 Run `looper --help` to see available commands.
