@@ -54,13 +54,10 @@ def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
         if in_device == out_device:
             device = verify_device_index(in_device, pa)
             name = device['name']
-            log.info(f'using device "{name}" (index {in_device})')
+            log.info(f'using selected device "{name}" (index {in_device})')
         return in_device, out_device
 
-    if config.online:
-        default_devices = []
-    else:
-        default_devices = ['default', 'pulse', 'sysdefault']
+    default_devices = []
 
     devices = populate_devices(pa)
     assert devices, 'no devices found'
@@ -70,12 +67,12 @@ def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
         if device is not None:
             index = device['index']
             name = device['name']
-            log.info(f'using device "{name}" (index {index})')
+            log.info(f'default device found, using device "{name}" (index {index})')
             return index, index
 
     # get device with lowest index
     device = min(devices.values(), key=lambda x: x['index'])
     index = device['index']
     name = device['name']
-    log.info(f'using device {name} (index {index})')
+    log.info(f'device chosen automatically, using device "{name}" (index {index})')
     return index, index
