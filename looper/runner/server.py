@@ -7,7 +7,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from nuclear.sublog import log
+from nuclear.sublog import log, log_exception
+
 
 from looper.runner.api import setup_looper_endpoints
 from looper.runner.looper import Looper
@@ -61,10 +62,23 @@ def creat_fastapi_app(looper: Looper) -> FastAPI:
 
     @app.exception_handler(Exception)
     async def error_handler(request: Request, exc: Exception):
+        log_exception(exc)
         return JSONResponse(
             status_code=500,
             content={'error': str(exc)},
         )
+
+    async def catch_exceptions_middleware(request: Request, call_next):
+        try:
+            return await call_next(request)
+        except Exception as exc:
+            log_exception(exc)
+            return JSONResponse(
+                status_code=500,
+                content={'error': str(exc)},
+            )
+
+    app.middleware('http')(catch_exceptions_middleware)
 
     setup_web_views(app, looper)
     setup_looper_endpoints(app, looper)

@@ -1,4 +1,3 @@
-from nuclear.sublog import logerr
 from nuclear import CliBuilder
 
 from looper.check.devices import list_devices
@@ -8,7 +7,7 @@ from looper.runner.runner import run_looper
 
 
 def main():
-    cli = CliBuilder()
+    cli = CliBuilder(log_error=True)
 
     @cli.add_command("run")
     def run():
@@ -30,5 +29,4 @@ def main():
         """List input devices"""
         list_devices()
 
-    with logerr():
-        cli.run()
+    cli.run()
