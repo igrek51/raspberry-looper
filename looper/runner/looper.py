@@ -233,15 +233,14 @@ class Looper:
         for track in self.tracks:
             if track.index != track_id:
                 track.recording = False
-        self.tracks[track_id].start_recording(self.current_position)
-        log.debug('overdubbing track...', track=track_id)
+        with self._lock:
+            self.tracks[track_id].start_recording(self.current_position)
 
     def stop_recording(self, track_id: int):
         if self.phase != LoopPhase.LOOP:
             return
-        self.tracks[track_id].recording = False
-        self.tracks[track_id].playing = True
-        log.info('overdub stopped', track=track_id)
+        with self._lock:
+            self.tracks[track_id].stop_recording()
 
     def toggle_play(self, track_id: int):
         self.tracks[track_id].toggle_play()

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 from nuclear.sublog import log
@@ -23,6 +23,9 @@ class Track:
     recording_from: int = -1
     dsp: SignalProcessor = None
 
+    _last_recorded_chunk: Optional[np.array] = None
+    _last_recorded_position: int = -1
+
     def __post_init__(self):
         self.dsp = SignalProcessor(self.config)
 
@@ -38,15 +41,33 @@ class Track:
         self.empty = False
 
     def overdub(self, input_chunk: np.array, position: int):
-        self.loop_chunks[position] = self.loop_chunks[position] + input_chunk
+        # fade in first chunk
+        if position == self.recording_from:
+            self.dsp.fade_in(input_chunk)
+        self.loop_chunks[position] += input_chunk
         self.empty = False
-        if position == shift_loop_position(self.recording_from, -1, len(self.loop_chunks)):
-            self.playing = True  # start playing after reaching a full cycle
+        self._last_recorded_chunk = input_chunk
+        self._last_recorded_position = position
+        # start playing after reaching a full cycle
+        if self.recording_from >= 0 and position == shift_loop_position(self.recording_from, -1, len(self.loop_chunks)):
+            self.playing = True
             self.recording_from = -1
 
     def start_recording(self, at_position: int):
         self.recording = True
         self.recording_from = at_position
+        self._last_recorded_chunk = None
+        log.debug('overdubbing track...', track_id=self.index)
+
+    def stop_recording(self):
+        self.recording = False
+        self.playing = True
+        # fade out last chunk
+        if self._last_recorded_chunk is not None:
+            self.loop_chunks[self._last_recorded_position] -= self._last_recorded_chunk
+            self.dsp.fade_out(self._last_recorded_chunk)
+            self.loop_chunks[self._last_recorded_position] += self._last_recorded_chunk
+        log.info('overdub stopped', track_id=self.index)
 
     def toggle_play(self):
         if self.playing:
