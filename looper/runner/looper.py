@@ -75,9 +75,9 @@ class Looper:
         self.recorder = OutputRecorder(self.config)
         self.dsp = SignalProcessor(self.config)
         self.reset()
-        self.audio_backend = AudioBackend.make(self.config.audio_backend)
+        self.audio_backend = AudioBackend.make(self.config.audio_backend_type)
         self.audio_backend.open(self.config, self.stream_audio_chunk)
-        
+
         if self.config.online:
             self.pinout.loopback_led.pulse(fade_in_time=0.5, fade_out_time=0.5)
             self.update_leds()

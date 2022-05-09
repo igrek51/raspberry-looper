@@ -1,3 +1,4 @@
+from typing import Optional
 from nuclear import CliBuilder
 
 from looper.check.devices import list_devices
@@ -10,9 +11,12 @@ def main():
     cli = CliBuilder(log_error=True)
 
     @cli.add_command("run")
-    def run():
-        """Run looper in a standard mode"""
-        run_looper()
+    def run(backend: Optional[str] = None):
+        """
+        Run looper in a standard mode
+        :param backend: audio backend for streaming chunks, pyaudio or jack
+        """
+        run_looper(backend)
 
     @cli.add_command("wire")
     def wire():

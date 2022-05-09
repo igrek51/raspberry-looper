@@ -2,20 +2,24 @@ import asyncio
 import os
 import time
 from pathlib import Path
+from typing import Optional
 
 from nuclear.sublog import log
 from nuclear.utils.shell import shell
 from gpiozero import BadPinFactory
 
 from looper.runner.server import Server, start_api
-from looper.runner.config import Config
+from looper.runner.config import AudioBackendType, Config
 from looper.runner.pinout import Pinout
 from looper.runner.looper import Looper
 
 
-def run_looper():
+def run_looper(audio_backend_type: Optional[str] = None):
     log.info('Starting looper...')
+
     config = Config()
+    if audio_backend_type:
+        config.audio_backend = AudioBackendType(audio_backend_type)
     log.info('Config loaded', 
         sampling_rate=f'{config.sampling_rate}Hz',
         chunk_size=f'{config.chunk_size} samples',
@@ -25,7 +29,6 @@ def run_looper():
         out_device=config.out_device,
         channels=config.channels,
     )
-    _change_workdir(config.workdir)
 
     try:
         pinout = Pinout()
@@ -33,6 +36,8 @@ def run_looper():
         log.warn('GPIO pins are not available, turning OFFLINE mode')
         config.offline = True
         pinout = None
+    
+    _change_workdir(config.workdir)
 
     looper = Looper(pinout, config)
     looper.run()

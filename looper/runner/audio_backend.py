@@ -4,13 +4,13 @@ from typing import Callable
 import pyaudio
 from nuclear.sublog import log
 from nuclear import CommandError
+from nuclear.shell import BackgroundCommand
 import numpy as np
 import jack
 import backoff
 
 from looper.runner.config import AudioBackendType, Config
 from looper.check.devices import find_device_index
-from looper.runner.cmd import BackgroundCommand
 
 
 class AudioBackend(ABC):
@@ -33,7 +33,7 @@ class AudioBackend(ABC):
 
 class PyAudioBackend(AudioBackend):
     def open(self, config: Config, stream_callback: Callable[[np.ndarray], np.ndarray]):
-        log.debug('Initializing PyAudio...')
+        log.info('Initializing PyAudio for streaming audio...')
         self._pa = pyaudio.PyAudio()
         in_device, out_device = find_device_index(config, self._pa)
 
@@ -55,7 +55,7 @@ class PyAudioBackend(AudioBackend):
             stream_callback=pyaudio_stream_callback,
         )
         self._loop_stream.start_stream()
-        log.debug('PyAudio stream started')
+        log.info('PyAudio stream started')
 
     def close(self):
         self._loop_stream.stop_stream()
@@ -66,16 +66,19 @@ class PyAudioBackend(AudioBackend):
 
 class JackBackend(AudioBackend):
     def open(self, config: Config, stream_callback: Callable[[np.ndarray], np.ndarray]):
-        log.debug('Starting JACK server...')
+        log.info('Initializing JACK server for streaming audio...')
         if config.online:
-            cmdline = '/usr/bin/jackd -ndefault --realtime -d alsa --device hw:1 --period 1024 --rate 44100'
+            cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
+                      f' --device hw:1' \
+                      f' --period {config.chunk_size}' \
+                      f' --rate {config.sampling_rate}'
         else:
-            cmdline = '/usr/bin/jackd -ndefault --realtime -d alsa --device hw:0 --period 1024 --rate 44100'
+            cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa --device hw:0 --period 1024 --rate 44100'
 
         def on_jackd_error(e: CommandError):
             log.error(f'JACK server failed to start')
 
-        self.jackd_cmd = BackgroundCommand(cmdline, print_stdout=True, on_error=on_jackd_error)
+        self.jackd_cmd = BackgroundCommand(cmdline, on_error=on_jackd_error, print_stdout=True, debug=True)
 
         client = self.open_client()
         self.jack_client = client
@@ -114,7 +117,7 @@ class JackBackend(AudioBackend):
         for playback_port in system_playback_ports:
             client.connect(looper_output, playback_port)
 
-        log.debug('JACK stream started')
+        log.info('JACK stream started')
 
     def close(self):
         self.jack_client.outports.clear()
@@ -122,10 +125,10 @@ class JackBackend(AudioBackend):
         self.jack_client.deactivate(ignore_errors=True)
         self.jack_client.close(ignore_errors=True)
         log.info('Audio JACK Stream closed')
-        self.jackd_cmd.interrupt()
+        self.jackd_cmd.terminate()
         log.debug('JACK server closed')
 
-    @backoff.on_exception(backoff.fibo, jack.JackOpenError, max_value=3, max_time=5, jitter=None)
+    @backoff.on_exception(backoff.expo, jack.JackOpenError, factor=0.2, max_value=2, max_time=10, jitter=None)
     def open_client(self) -> jack.Client:
         log.debug('Connecting to JACK server...')
         return jack.Client('raspberry_looper', no_start_server=True)

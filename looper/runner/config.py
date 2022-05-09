@@ -1,18 +1,23 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 import pyaudio
 
 
 class AudioBackendType(Enum):
     PYAUDIO = 'pyaudio'  # pyAudio backend, not distrupting other apps
-    JACK = 'jack'  # JACKd server for real-time, low-latency audio streaming
+    JACK = 'jack'  # JACKd server for real-time, low-latency audio streaming, but disabling other apps
 
 
 @dataclass
 class Config:
-    # Backend for streaming audio chunks: 'pyaudio' or 'jack'
-    audio_backend: AudioBackendType = AudioBackendType.JACK
+    # Superior backend for streaming audio chunks (on all devices)
+    audio_backend: Optional[AudioBackendType] = None
+    # Backend for streaming audio chunks on Raspberry Pi
+    online_audio_backend: AudioBackendType = AudioBackendType.JACK
+    # Backend for streaming audio chunks on regular PC
+    offline_audio_backend: AudioBackendType = AudioBackendType.PYAUDIO
 
     # sampling rate [Hz]
     sampling_rate: int = 44100
@@ -81,3 +86,9 @@ class Config:
     @property
     def online(self) -> bool:
         return not self.offline
+
+    @property
+    def audio_backend_type(self) -> AudioBackendType:
+        if self.audio_backend is not None:
+            return self.audio_backend
+        return self.offline_audio_backend if self.offline else self.online_audio_backend
