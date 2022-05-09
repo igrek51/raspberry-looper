@@ -30,6 +30,20 @@
         </div>
     </div>
 
+    <div class="card bg-light mb-3">
+        <div class="card-header">Settings</div>
+        <div class="card-body">
+
+            <div>
+                <div class="input-group mb-4">
+                    <span class="input-group-text">Input baseline bias [-1,+1]:</span>
+                    <input type="text" class="form-control" placeholder="0" id="text-baseline-bias" value="">
+                    <button class="btn btn-outline-secondary" type="button" id="btn-set-baseline-bias">Set</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
 </div>
 {% endblock %}
@@ -63,8 +77,18 @@ $(document).ready(function() {
     bindNewTrackButton()
 
     $("#btn-reset-tracks").click(function () {
-        ajaxRequest('post', '/api/looper/reset', function(data) {
+        ajaxRequest('post', `/api/looper/reset`, function(data) {
             location.reload()
+        })
+    })
+
+    ajaxRequest('get', '/api/looper/baseline_bias', function(data) {
+        $(`#text-baseline-bias`).val(data.input_baseline_bias)
+    })
+    $("#btn-set-baseline-bias").click(function () {
+        val = $(`#text-baseline-bias`).val()
+        ajaxRequest('post', `/api/looper/baseline_bias/${val}`, function(data) {
+            showAlert('Input baseline bias changed', 'success')
         })
     })
 })

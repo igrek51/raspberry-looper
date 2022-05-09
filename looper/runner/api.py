@@ -152,6 +152,17 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
         SessionManager(looper).restore_session(filename)
 
 
+    @app.post("/api/looper/baseline_bias/{baseline_bias}")
+    async def set_baseline_bias(baseline_bias: float):
+        looper.baseline_bias = baseline_bias
+
+    @app.get("/api/looper/baseline_bias")
+    async def get_baseline_bias():
+        return {
+            'input_baseline_bias': looper.baseline_bias,
+        }
+
+
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:
     return {
         'index': looper.tracks[track_id].index,

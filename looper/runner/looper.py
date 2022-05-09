@@ -34,12 +34,14 @@ class Looper:
     input_muted: bool = False
     output_volume: float = 0  # dB
     output_muted: bool = False
+    baseline_bias: float = 0  # fraction of full-scale that input baseline should be moved 
     main_track: int = 0  # index of a track controllable by foot switch
     master_chunks: List[np.array] = field(default_factory=list)
     tracks_num: int = 0
     tracks: List[Track] = field(default_factory=list)
     recorder: OutputRecorder = None
     dsp: SignalProcessor = None
+
     _lock: Lock = Lock()
 
     @property
@@ -82,6 +84,7 @@ class Looper:
                 input_chunk = self.dsp.silence()
             else:
                 input_chunk = np.frombuffer(in_data, dtype=np.int16)
+                input_chunk = input_chunk + int(self.baseline_bias * self.config.max_amplitude)
                 input_chunk = self.dsp.amplify(input_chunk, self.input_volume)
 
             with self._lock:

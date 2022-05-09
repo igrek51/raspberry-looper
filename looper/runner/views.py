@@ -51,9 +51,9 @@ def setup_web_views(app: FastAPI, looper: Looper):
     async def view_metronome(request: Request):
         return templates.TemplateResponse("metronome.html", _tracks_context(request))
 
-    @app.get("/manage", response_class=HTMLResponse)
-    async def view_manage(request: Request):
-        return templates.TemplateResponse("manage.html", _tracks_context(request))
+    @app.get("/settings", response_class=HTMLResponse)
+    async def view_settings(request: Request):
+        return templates.TemplateResponse("settings.html", _tracks_context(request))
 
     @app.get("/session", response_class=HTMLResponse)
     async def view_session(request: Request):
