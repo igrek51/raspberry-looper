@@ -70,6 +70,8 @@ On the Raspberry Pi:
 
 7. Install: `sudo apt install libatlas-base-dev`
 
+8. Install jack for real-time, low-latency audio streaming: `sudo apt install jackd`
+
 8. Setup volume levels with `alsamixer`:
     - F6, 
     - select USB Audio Device,
@@ -106,7 +108,8 @@ You need Python 3.8 or higher
 
 1. Install required libraries:  
   `sudo apt install python3-pyaudio` (On Debian: `sudo apt install portaudio19-dev`)  
-  `sudo apt install libatlas-base-dev`
+  `sudo apt install libatlas-base-dev`  
+  `sudo apt install jackd` (if using JACK audio backend)  
 2. Create virtualenv and setup python project with `make setup`. Activate virtualenv: `. venv/bin/activate`.
 3. Run `looper run` and visit http://localhost:8000 in your browser to see the frontend app.
 

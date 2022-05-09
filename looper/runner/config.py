@@ -1,10 +1,19 @@
 from dataclasses import dataclass
+from enum import Enum
 
 import pyaudio
 
 
+class AudioBackend(Enum):
+    PYAUDIO = 'pyaudio'  # pyAudio backend, not distrupting other apps
+    JACK = 'jack'  # JACKd server for real-time, low-latency audio streaming
+
+
 @dataclass
 class Config:
+    # Backend for streaming audio chunks: 'pyaudio' or 'jack'
+    audio_backend: AudioBackend = AudioBackend.JACK
+
     # sampling rate [Hz]
     sampling_rate: int = 44100
 
