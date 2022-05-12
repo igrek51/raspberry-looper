@@ -1,7 +1,6 @@
 import io
 import signal
 import sys
-import select
 import subprocess
 from typing import Callable
 import threading
@@ -18,6 +17,7 @@ class BackgroundCommand:
         on_next_line: Callable[[str], None] = None,
         on_error: Callable[[CommandError], None] = None,
         print_stdout: bool = False,
+        print_stderr: bool = True,
         debug: bool = False,
     ):
         """Run system shell command in background."""
@@ -27,21 +27,15 @@ class BackgroundCommand:
 
         def monitor_output(stream: BackgroundCommand):
             stdout_iter = iter(stream._process.stdout.readline, b'')
-            poll_obj = select.poll()
-            poll_obj.register(self._process.stdout, select.POLLIN)
-
+            
             while True:
                 if stream._stop:
                     break
-                poll_result = poll_obj.poll(0)
-                if not poll_result:
-                    time.sleep(1)
-                    continue
-
                 try:
                     line = next(stdout_iter)
                 except StopIteration:
                     break
+
                 line_str = line.decode()
                 if print_stdout:
                     sys.stdout.write(line_str)
@@ -69,7 +63,7 @@ class BackgroundCommand:
         self._process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
+            stderr=subprocess.STDOUT if print_stderr else subprocess.PIPE,
             shell=True,
         )
 
