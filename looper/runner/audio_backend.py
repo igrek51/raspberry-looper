@@ -79,8 +79,14 @@ class JackBackend(AudioBackend):
 
         def on_jackd_error(e: CommandError):
             log.error(f'JACK server failed to start')
+        
+        def on_next_line(line: str):
+            log.debug(f'JACK output', stdout=line.strip())
 
-        self.jackd_cmd = BackgroundCommand(cmdline, on_error=on_jackd_error, print_stdout=True, debug=True)
+        self.jackd_cmd = BackgroundCommand(
+            cmdline, on_error=on_jackd_error, on_next_line=on_next_line, 
+            print_stdout=False, debug=True,
+        )
 
         client = self.open_client()
         self.jack_client = client
