@@ -9,6 +9,7 @@ from looper.runner.audio_backend import PyAudioBackend
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
+from looper.runner.sample import sample_format_numpy_type
 
 
 def measure_latency():
@@ -29,7 +30,8 @@ def measure_latency():
     sine = dsp.sine(frequency=440, amplitude=amplitude)
 
     max_recordings = 10
-    recordings = np.zeros([max_recordings, chunk], dtype=np.int16)
+    np_type = sample_format_numpy_type(config.sample_format)
+    recordings = np.zeros([max_recordings, chunk], dtype=np_type)
     started = False
     current_buffer_idx: int = -1
 
@@ -45,7 +47,7 @@ def measure_latency():
         if current_buffer_idx >= max_recordings:
             return silence, pyaudio.paComplete
 
-        recordings[current_buffer_idx, :] = np.frombuffer(in_data, dtype=np.int16)
+        recordings[current_buffer_idx, :] = np.frombuffer(in_data, dtype=np_type)
         current_buffer_idx += 1
         return silence, pyaudio.paContinue
 

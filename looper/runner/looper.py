@@ -349,6 +349,7 @@ class Looper:
     @baseline_bias.setter
     def baseline_bias(self, bias_fraction: float):
         self._baseline_bias = bias_fraction * sample_format_max_amplitude(self.config.sample_format)
+        log.info('baseline bias set', bias_value=self._baseline_bias, bias_fraction=bias_fraction)
 
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:

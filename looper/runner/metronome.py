@@ -6,6 +6,7 @@ from scipy.io import wavfile
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
+from looper.runner.sample import sample_format_numpy_type
 
 
 class Metronome:
@@ -22,7 +23,8 @@ class Metronome:
         beat_high = self.load_wav_array(Path('sfx') / 'metronome-beat-high.wav')
         beat_low = self.load_wav_array(Path('sfx') / 'metronome-beat-low.wav')
 
-        track = np.zeros(samples_num, dtype=np.int16)
+        np_type = sample_format_numpy_type(self.config.sample_format)
+        track = np.zeros(samples_num, dtype=np_type)
 
         for beat in range(beats):
             if beat == 0:  # high beat

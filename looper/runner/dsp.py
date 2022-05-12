@@ -2,7 +2,7 @@ from typing import List
 import numpy as np
 
 from looper.runner.config import Config
-from looper.runner.sample import sample_format_max_amplitude
+from looper.runner.sample import sample_format_max_amplitude, sample_format_numpy_type
 
 
 class SignalProcessor:
@@ -11,6 +11,7 @@ class SignalProcessor:
         self.downramp = np.linspace(1, 0, config.chunk_size)
         self.upramp = np.linspace(0, 1, config.chunk_size)
         self.max_amp = sample_format_max_amplitude(config.sample_format)
+        self.np_type = sample_format_numpy_type(config.sample_format)
 
     def fade_in(self, buffer):
         np.multiply(buffer, self.upramp, out=buffer, casting="unsafe")
@@ -20,18 +21,18 @@ class SignalProcessor:
 
     def sine(self, frequency: float = 440, amplitude: int = 32767) -> np.array:
         sine_sample_frequency = frequency / self.config.sampling_rate
-        sine = np.empty(self.config.chunk_size, dtype=np.int16)
+        sine = np.empty(self.config.chunk_size, dtype=self.np_type)
         for i in range(self.config.chunk_size):
             sine[i] = np.sin(2 * np.pi * sine_sample_frequency * i) * amplitude
         return sine
 
     def silence(self) -> np.array:
-        return np.zeros(self.config.chunk_size, dtype=np.int16)
+        return np.zeros(self.config.chunk_size, dtype=self.np_type)
 
     def amplify(self, chunk: np.array, volume: float) -> np.array:
         """Amplify by a given volume in root-power decibels"""
         result = chunk * 10 ** (volume / 20)
-        return result.astype(np.int16)
+        return result.astype(self.np_type)
 
     def compute_chunk_loudness(self, chunk: np.array) -> float:
         """Compute loudness in decibels relative to full scale (dBFS)"""

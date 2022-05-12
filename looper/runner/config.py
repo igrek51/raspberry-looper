@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Dict, Optional
+from typing import Optional
 import os
 from pathlib import Path
 
-import pyaudio
 import yaml
 import dacite
 from nuclear.sublog import log
@@ -24,7 +23,7 @@ class Config:
     # Backend for streaming audio chunks on regular PC
     offline_audio_backend: AudioBackendType = AudioBackendType.PYAUDIO
 
-    # sampling rate [Hz]
+    # sampling rate [Hz], eg.: 44100, 48000
     sampling_rate: int = 44100
 
     # buffer size, number of frames per buffer
@@ -124,6 +123,10 @@ def load_config_from_file(path: Path) -> Config:
     try:
         with path.open() as file:
             config_dict = yaml.load(file, Loader=yaml.FullLoader)
+            if not config_dict:
+                log.info('config file is empty, loading default config')
+                return Config()
+                
             config = dacite.from_dict(
                 data_class=Config,
                 data=config_dict,
