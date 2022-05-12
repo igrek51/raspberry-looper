@@ -99,7 +99,7 @@ mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
 [Desktop Entry] 
 Type=Application
-Exec=screen -S looper bash -c "python3 -m looper run |& tee /home/pi/looper/looper.log"
+Exec=screen -dm -S looper bash -c "python3 -m looper run |& tee /home/pi/looper/looper.log; exec bash"
 EOF
 ```
 
