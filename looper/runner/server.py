@@ -37,7 +37,7 @@ def start_api(looper: Looper) -> Server:
     port = looper.config.http_port
     config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=port, log_level="debug")
     server = Server(config=config)
-    log.info(f'Starting HTTP server at port {port}')
+    log.info(f'Starting HTTP server on http://0.0.0.0:{port}')
     server.start()
     return server
 

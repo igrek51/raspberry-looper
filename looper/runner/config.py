@@ -1,8 +1,13 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional
+import os
+from pathlib import Path
 
 import pyaudio
+import yaml
+import dacite
+from nuclear.sublog import log
 
 
 class AudioBackendType(Enum):
@@ -96,3 +101,36 @@ class Config:
         if self.audio_backend is not None:
             return self.audio_backend
         return self.offline_audio_backend if self.offline else self.online_audio_backend
+
+
+def load_config() -> Config:
+    config_file_path = os.environ.get('CONFIG_FILE')
+    if not config_file_path:
+        path = Path('config.yaml')
+        if path.is_file():
+            log.info(f'found "{path}" file at default config path')
+            return load_config_from_file(path)
+
+        log.info('CONFIG_FILE env is unspecified, loading default config')
+        return Config()
+
+    path = Path(config_file_path)
+    return load_config_from_file(path)
+
+
+def load_config_from_file(path: Path) -> Config:
+    if not path.is_file():
+        raise FileNotFoundError(f"config file {path} doesn't exist")
+
+    try:
+        with path.open() as file:
+            config_dict = yaml.load(file, Loader=yaml.FullLoader)
+            config = dacite.from_dict(
+                data_class=Config,
+                data=config_dict,
+                config=dacite.Config(cast=[AudioBackendType]),
+            )
+            log.info(f'config loaded from {path}: {config_dict}')
+            return config
+    except Exception as e:
+        raise RuntimeError('loading config failed') from e

@@ -16,6 +16,7 @@ Our chief weapons are:
 - controlling tracks with physical buttons and web app from a mobile phone,
 - visualizing track plots,
 - running on either Raspberry Pi or a regular PC with Linux,
+- support for JACK low-latency audio streaming or pyAudio library,
 
 ## Examples
 ![](./docs/img/device-in-action-labelled.jpg)
