@@ -37,6 +37,10 @@ class Config:
     # index of output device, -1 find automatically
     out_device: int = -1
 
+    # name of the audio card device that should be used with JACK
+    online_jack_device: str = 'hw:1'
+    offline_jack_device: str = 'hw:0'
+
     # mono
     channels: int = 1
 

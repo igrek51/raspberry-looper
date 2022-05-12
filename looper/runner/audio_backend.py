@@ -2,13 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 import pyaudio
-from nuclear.sublog import log
+from nuclear.sublog import log, log_exception
 from nuclear import CommandError
-from nuclear.shell import BackgroundCommand
 import numpy as np
 import jack
 import backoff
 
+from looper.runner.cmd import BackgroundCommand
 from looper.runner.config import AudioBackendType, Config
 from looper.check.devices import find_device_index
 
@@ -68,12 +68,14 @@ class JackBackend(AudioBackend):
     def open(self, config: Config, stream_callback: Callable[[np.ndarray], np.ndarray]):
         log.info('Initializing JACK server for streaming audio...')
         if config.online:
-            cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
-                      f' --device hw:1' \
-                      f' --period {config.chunk_size}' \
-                      f' --rate {config.sampling_rate}'
+            device = config.online_jack_device
         else:
-            cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa --device hw:0 --period 1024 --rate 44100'
+            device = config.offline_jack_device
+
+        cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
+                  f' --device {device}' \
+                  f' --period {config.chunk_size}' \
+                  f' --rate {config.sampling_rate}'
 
         def on_jackd_error(e: CommandError):
             log.error(f'JACK server failed to start')
@@ -120,8 +122,11 @@ class JackBackend(AudioBackend):
         log.info('JACK stream started')
 
     def close(self):
-        self.jack_client.outports.clear()
-        self.jack_client.inports.clear()
+        try:
+            self.jack_client.outports.clear()
+            self.jack_client.inports.clear()
+        except jack.JackErrorCode as e:
+            log_exception(e)
         self.jack_client.deactivate(ignore_errors=True)
         self.jack_client.close(ignore_errors=True)
         log.info('Audio JACK Stream closed')
