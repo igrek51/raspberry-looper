@@ -69,7 +69,7 @@ On the Raspberry Pi:
 6. Install pyaudio: `sudo apt install python3-pyaudio`.  
    (On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197))
 
-7. Install: `sudo apt install libatlas-base-dev`
+7. Install required packages: `sudo apt install libatlas-base-dev screen`
 
 8. Install JACK for real-time, low-latency audio streaming:  
   ```bash
@@ -99,7 +99,7 @@ mkdir -p /home/pi/.config/autostart
 cat << 'EOF' > /home/pi/.config/autostart/looper.desktop
 [Desktop Entry] 
 Type=Application
-Exec=lxterminal -e "python3 -m looper run |& tee /home/pi/looper/looper.log"
+Exec=screen -S looper bash -c "python3 -m looper run |& tee /home/pi/looper/looper.log"
 EOF
 ```
 

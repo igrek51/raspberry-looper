@@ -51,10 +51,19 @@ push:
 remote-run:
 	ssh -t pi "cd /home/pi/looper && python3 -m looper run"
 
+remote-kill:
+	ssh -t pi "screen -S looper -X at '#' stuff '^C'"
+
 push-and-run: push remote-run
 
 list-looper-ps:
 	pgrep -a -f "looper run"
+
+screen-run:
+	screen -S looper bash -c "python3 -m looper run |& tee /home/pi/looper/looper.log"
+
+screen-kill:
+	screen -S looper -X at '#' stuff '^C'
 
 pull-notebooks:
 	scp pi:/home/pi/looper/notebooks/*.ipynb notebooks/

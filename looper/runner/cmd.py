@@ -4,7 +4,6 @@ import sys
 import subprocess
 from typing import Callable
 import threading
-import time
 import psutil
 
 from nuclear.shell import CommandError
