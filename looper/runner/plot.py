@@ -6,6 +6,7 @@ import matplotlib
 import numpy as np
 from starlette.responses import StreamingResponse
 from looper.runner.looper import Looper
+from looper.runner.sample import sample_format_max_amplitude
 
 from looper.runner.track import Track
 
@@ -14,11 +15,12 @@ def generate_track_plot(track: Track, looper: Looper) -> StreamingResponse:
     matplotlib.rcParams["agg.path.chunksize"] = 10_000
     matplotlib.style.use("fast")
 
+    max_amp = sample_format_max_amplitude(looper.config.sample_format)
     if len(track.loop_chunks) == 0:
         all_chunks = looper.dsp.silence()
     else:
         all_chunks = np.concatenate(track.loop_chunks)
-        all_chunks = all_chunks / looper.config.max_amplitude
+        all_chunks = all_chunks / max_amp
 
     figure = plt.figure()
     figure.set_size_inches((1260 - 52) / 100, (320 - 29) / 100)

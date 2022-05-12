@@ -13,6 +13,7 @@ from looper.runner.dsp import SignalProcessor
 from looper.runner.metronome import Metronome
 from looper.runner.pinout import Pinout
 from looper.runner.recorder import OutputRecorder
+from looper.runner.sample import sample_format_max_amplitude
 from looper.runner.track import Track
 
 
@@ -33,7 +34,7 @@ class Looper:
     input_muted: bool = False
     output_volume: float = 0  # dB
     output_muted: bool = False
-    baseline_bias: float = 0  # fraction of full-scale that input baseline should be moved 
+    _baseline_bias: float = 0  # samples value that input baseline will be moved
     main_track: int = 0  # index of a track controllable by foot switch
     master_chunks: List[np.array] = field(default_factory=list)
     tracks_num: int = 0
@@ -88,7 +89,7 @@ class Looper:
         if self.input_muted:
             input_chunk = self.dsp.silence()
         else:
-            input_chunk = input_chunk + int(self.baseline_bias * self.config.max_amplitude)
+            input_chunk = input_chunk + self._baseline_bias
             input_chunk = self.dsp.amplify(input_chunk, self.input_volume)
 
         with self._lock:
@@ -339,6 +340,15 @@ class Looper:
             log.info('output muted')
         else:
             log.info('output unmuted')
+
+    @property
+    def baseline_bias(self) -> float:
+        """Return fraction of full-scale that input baseline is moved"""
+        return self._baseline_bias / sample_format_max_amplitude(self.config.sample_format)
+
+    @baseline_bias.setter
+    def baseline_bias(self, bias_fraction: float):
+        self._baseline_bias = bias_fraction * sample_format_max_amplitude(self.config.sample_format)
 
     async def update_progress(self):
         if self.phase != LoopPhase.LOOP:

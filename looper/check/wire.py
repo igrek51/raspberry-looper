@@ -2,6 +2,7 @@ import time
 
 import pyaudio
 from nuclear.sublog import log
+from looper.runner.audio_backend import PyAudioBackend
 
 from looper.runner.config import Config
 
@@ -28,7 +29,7 @@ def wire_input_output():
         return (in_data, pyaudio.paContinue)
 
     loop_stream = pa.open(
-        format=config.format,
+        format=PyAudioBackend.pyaudio_sample_format(config.sample_format),
         channels=config.channels,
         rate=config.sampling_rate,
         input=True,

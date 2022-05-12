@@ -30,12 +30,11 @@ class Config:
     # buffer size, number of frames per buffer
     chunk_size: int = 1024
 
-    # Sampling size and format, bit depth (16-bit)
-    format = pyaudio.paInt16
-    # size (in bytes) for the sample format, see pa.get_sample_size(config.format)
-    format_bytes: int = 2
-    # full-scale amplitude (2**16/2-1)
-    max_amplitude: int = 32767
+    # Sampling size and format, bit depth (16 or 32-bit)
+    # - int16 - 16bits, integer
+    # - int32 - 32bits, integer
+    # - float32 - 32bits, float
+    sample_format: str = 'int16'
 
     # index of input device, -1 find automatically
     in_device: int = -1

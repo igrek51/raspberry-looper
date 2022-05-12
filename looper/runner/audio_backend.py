@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from random import sample
 from typing import Callable
 
 import pyaudio
@@ -11,6 +12,7 @@ import backoff
 from looper.runner.cmd import BackgroundCommand
 from looper.runner.config import AudioBackendType, Config
 from looper.check.devices import find_device_index
+from looper.runner.sample import sample_format_max_amplitude, sample_format_numpy_type
 
 
 class AudioBackend(ABC):
@@ -36,14 +38,15 @@ class PyAudioBackend(AudioBackend):
         log.info('Initializing PyAudio for streaming audio...')
         self._pa = pyaudio.PyAudio()
         in_device, out_device = find_device_index(config, self._pa)
+        dst_np_type = sample_format_numpy_type(config.sample_format)
 
         def pyaudio_stream_callback(in_data, frame_count, time_info, status_flags):
-            input_chunk = np.frombuffer(in_data, dtype=np.int16)
+            input_chunk = np.frombuffer(in_data, dtype=dst_np_type)
             out_chunk = stream_callback(input_chunk)
             return out_chunk, pyaudio.paContinue
 
         self._loop_stream = self._pa.open(
-            format=config.format,
+            format=self.pyaudio_sample_format(config.sample_format),
             channels=config.channels,
             rate=config.sampling_rate,
             input=True,
@@ -62,6 +65,16 @@ class PyAudioBackend(AudioBackend):
         self._loop_stream.close()
         self._pa.terminate()
         log.info('Audio Stream closed')
+
+    @staticmethod
+    def pyaudio_sample_format(sample_format: str):
+        if sample_format == 'int16':
+            return pyaudio.paInt16
+        elif sample_format == 'int32':
+            return pyaudio.paInt32
+        elif sample_format == 'float32':
+            return pyaudio.paFloat32
+        raise ValueError(f"Unknown sample format: {sample_format}")
 
 
 class JackBackend(AudioBackend):
@@ -108,13 +121,27 @@ class JackBackend(AudioBackend):
         playback_names = ', '.join([port.name for port in system_playback_ports])
         log.info('Wiring JACK ports', capture=system_input.name, playback_ports=playback_names)
 
-        @client.set_process_callback
-        def process(blocksize: int):
-            input_chunk: np.ndarray = looper_input.get_array()
-            input_chunk = (input_chunk * config.max_amplitude).astype(np.int16)
-            out_chunk = stream_callback(input_chunk)
-            out_chunk = (out_chunk / config.max_amplitude).astype(np.float32)
-            looper_output.get_array()[:] = out_chunk
+        if config.sample_format in {'int16', 'int32'}:
+            dst_max_amp = sample_format_max_amplitude(config.sample_format)
+            dst_np_type = sample_format_numpy_type(config.sample_format)
+
+            @client.set_process_callback
+            def process(blocksize: int):
+                input_chunk: np.ndarray = looper_input.get_array()  # float32
+                input_chunk = (input_chunk * dst_max_amp).astype(dst_np_type)
+                out_chunk = stream_callback(input_chunk)
+                out_chunk = (out_chunk / dst_max_amp).astype(np.float32)
+                looper_output.get_array()[:] = out_chunk
+
+        elif config.sample_format == 'float32':
+            @client.set_process_callback
+            def process(blocksize: int):
+                input_chunk: np.ndarray = looper_input.get_array()  # float32
+                out_chunk = stream_callback(input_chunk)
+                looper_output.get_array()[:] = out_chunk
+
+        else:
+            raise ValueError(f"Unknown sample format: {config.sample_format}")
 
         @client.set_shutdown_callback
         def shutdown(status, reason):

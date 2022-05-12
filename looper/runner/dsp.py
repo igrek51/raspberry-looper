@@ -2,6 +2,7 @@ from typing import List
 import numpy as np
 
 from looper.runner.config import Config
+from looper.runner.sample import sample_format_max_amplitude
 
 
 class SignalProcessor:
@@ -9,7 +10,7 @@ class SignalProcessor:
         self.config = config
         self.downramp = np.linspace(1, 0, config.chunk_size)
         self.upramp = np.linspace(0, 1, config.chunk_size)
-        self.max_amp = 32767
+        self.max_amp = sample_format_max_amplitude(config.sample_format)
 
     def fade_in(self, buffer):
         np.multiply(buffer, self.upramp, out=buffer, casting="unsafe")

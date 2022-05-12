@@ -5,6 +5,7 @@ import math
 import pyaudio
 from nuclear.sublog import log
 import numpy as np
+from looper.runner.audio_backend import PyAudioBackend
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
@@ -49,7 +50,7 @@ def measure_latency():
         return silence, pyaudio.paContinue
 
     loop_stream = pa.open(
-        format=config.format,
+        format=PyAudioBackend.pyaudio_sample_format(config.sample_format),
         channels=config.channels,
         rate=config.sampling_rate,
         input=True,

@@ -12,6 +12,7 @@ from pydub import AudioSegment
 from nuclear.sublog import log
 
 from looper.runner.config import Config
+from looper.runner.sample import sample_format_bytes
 
 
 @dataclass
@@ -47,10 +48,11 @@ class OutputRecorder:
         log.debug('creating WAV file', path=self.wav_path)
         Path(self.config.output_recordings_dir).mkdir(exist_ok=True, parents=True)
 
+        format_bytes = sample_format_bytes(self.config.sample_format)
         with self._lock:
             self.wav = wave.open(str(self.wav_path), 'w')
             self.wav.setnchannels(self.config.channels)
-            self.wav.setsampwidth(self.config.format_bytes)
+            self.wav.setsampwidth(format_bytes)
             self.wav.setframerate(self.config.sampling_rate)
 
         self.chunks_written = 0
@@ -136,9 +138,10 @@ def save_wav(filename: str, frames_channel: Callable[[], Optional[np.array]], co
 
     Path(filename).parent.mkdir(exist_ok=True, parents=True)
 
+    format_bytes = sample_format_bytes(config.sample_format)
     wav = wave.open(filename, 'w')
     wav.setnchannels(config.channels)
-    wav.setsampwidth(config.format_bytes)
+    wav.setsampwidth(format_bytes)
     wav.setframerate(config.sampling_rate)
 
     frames_written = 0
