@@ -52,3 +52,17 @@ class SignalProcessor:
         if rms <= 0:
             return -100
         return 20 * np.log10(rms * np.sqrt(2))
+
+    def calculate_baesline_bias(self, chunks: List[np.array]) -> float:
+        """Calculate bias (in samples value) of the baseline compared to zero level"""
+        if not chunks:
+            return 0
+        means = []
+        for chunk in chunks:
+            means.append(np.mean(chunk))
+        return np.mean(means)
+
+    def move_by_offset(self, chunks: List[np.array], offset: float):
+        """Move all chunks samples by a given offset"""
+        for index, chunk in enumerate(chunks):
+            chunks[index] = chunk + offset

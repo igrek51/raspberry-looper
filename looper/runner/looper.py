@@ -57,7 +57,10 @@ class Looper:
     def loop_tempo(self) -> float:
         if not self.master_chunks:
             return 0
-        return 4 * 60 / self.loop_duration  # BPM
+        tempo = 60 / self.loop_duration  # BPM
+        while tempo < 60:
+            tempo *= 2
+        return tempo
 
     @property
     def relative_progress(self) -> float:
@@ -202,6 +205,16 @@ class Looper:
 
     def stop_recording_master(self):
         with self._lock:
+            if self.config.auto_anti_bias:
+                chunks_bias = self.dsp.calculate_baesline_bias(self.master_chunks)
+                chunks_bias_fraction = chunks_bias / sample_format_max_amplitude(self.config.sample_format)
+                self.dsp.move_by_offset(self.master_chunks, -chunks_bias)
+                self._baseline_bias -= chunks_bias
+                log.info(f'input baseline bias has been automatically compensated', 
+                    bias=f'{round(chunks_bias, 6)}',
+                    full_scale_fraction=f'{round(chunks_bias_fraction, 6)}',
+                )
+
             self.current_position = 0
             for track in self.tracks:
                 if track.index == 0:

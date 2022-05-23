@@ -83,6 +83,9 @@ class Config:
     # If enabled, pressing spacebar key activates recording like footswitch does
     spacebar_footswitch: bool = True
 
+    # If enabled, baseline bias will be automatically normalized
+    auto_anti_bias: bool = True
+
 
     @property
     def chunk_length_ms(self) -> float:
