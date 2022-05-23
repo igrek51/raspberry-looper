@@ -15,7 +15,7 @@ def wire_input_output():
     pa = pyaudio.PyAudio()
 
     buffers_processed = 0
-    log.info(f'one buffer length: {config.chunk_length_ms}ms')
+    log.info(f'one buffer length: {config.chunk_length_s * 1000}ms')
 
     def loop_callback(in_data, frame_count, time_info, status_flags):
         """

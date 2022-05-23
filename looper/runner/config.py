@@ -1,12 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
-import os
-from pathlib import Path
-
-import yaml
-import dacite
-from nuclear.sublog import log
 
 
 class AudioBackendType(Enum):
@@ -16,7 +10,7 @@ class AudioBackendType(Enum):
 
 @dataclass
 class Config:
-    # Superior backend for streaming audio chunks (on all devices): pyaudio or jack
+    # Backend for streaming audio (on all devices): pyaudio or jack
     audio_backend: Optional[AudioBackendType] = None
     # Backend for streaming audio chunks on Raspberry Pi
     online_audio_backend: AudioBackendType = AudioBackendType.JACK
@@ -24,7 +18,7 @@ class Config:
     offline_audio_backend: AudioBackendType = AudioBackendType.PYAUDIO
 
     # sampling rate [Hz], eg.: 44100, 48000
-    sampling_rate: int = 44100
+    sampling_rate: int = 48000
 
     # buffer size, number of frames per buffer
     chunk_size: int = 1024
@@ -33,7 +27,7 @@ class Config:
     # - int16 - 16bits, integer
     # - int32 - 32bits, integer
     # - float32 - 32bits, float
-    sample_format: str = 'int16'
+    sample_format: str = 'int32'
 
     # index of input device, -1 find automatically
     in_device: int = -1
@@ -42,7 +36,7 @@ class Config:
 
     # name of the audio card device that should be used with JACK
     jack_online_in_device: str = 'hw:1'
-    jack_online_out_device: str = 'hw:1'
+    jack_online_out_device: str = 'hw:0'
     jack_offline_in_device: str = 'hw:0'
     jack_offline_out_device: str = 'hw:0'
 
@@ -92,10 +86,6 @@ class Config:
 
 
     @property
-    def chunk_length_ms(self) -> float:
-        return 1000 * self.chunk_size / self.sampling_rate
-
-    @property
     def chunk_length_s(self) -> float:
         return self.chunk_size / self.sampling_rate
 
@@ -112,41 +102,3 @@ class Config:
         if self.audio_backend is not None:
             return self.audio_backend
         return self.offline_audio_backend if self.offline else self.online_audio_backend
-
-
-def load_config(config_file_path: Optional[str] = None) -> Config:
-    if not config_file_path:
-        config_file_path = os.environ.get('CONFIG_FILE')
-    if not config_file_path:
-        path = Path('default.config.yaml')
-        if path.is_file():
-            log.info(f'found "{path}" file at default config path')
-            return load_config_from_file(path)
-
-        log.info('CONFIG_FILE env is unspecified, loading default config')
-        return Config()
-
-    path = Path(config_file_path)
-    return load_config_from_file(path)
-
-
-def load_config_from_file(path: Path) -> Config:
-    if not path.is_file():
-        raise FileNotFoundError(f"config file {path} doesn't exist")
-
-    try:
-        with path.open() as file:
-            config_dict = yaml.load(file, Loader=yaml.FullLoader)
-            if not config_dict:
-                log.info('config file is empty, loading default config')
-                return Config()
-                
-            config = dacite.from_dict(
-                data_class=Config,
-                data=config_dict,
-                config=dacite.Config(cast=[AudioBackendType]),
-            )
-            log.info(f'config loaded from {path}: {config_dict}')
-            return config
-    except Exception as e:
-        raise RuntimeError('loading config failed') from e

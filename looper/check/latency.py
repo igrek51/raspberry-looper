@@ -25,7 +25,7 @@ def measure_latency():
     silence = dsp.silence()
     amplitude = 32767
 
-    log.info(f"one buffer length: {config.chunk_length_ms}ms")
+    log.info(f"one buffer length: {config.chunk_length_s * 1000}ms")
 
     sine = dsp.sine(frequency=440, amplitude=amplitude)
 

@@ -11,7 +11,8 @@ from gpiozero import BadPinFactory, PinFactoryFallback
 from getkey import getkey, keys
 
 from looper.runner.server import Server, start_api
-from looper.runner.config import AudioBackendType, load_config
+from looper.runner.config import AudioBackendType
+from looper.runner.config_load import load_config
 from looper.runner.pinout import Pinout
 from looper.runner.looper import Looper
 
@@ -36,7 +37,7 @@ def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
         sample_format=config.sample_format,
         sampling_rate=f'{config.sampling_rate}Hz',
         chunk_size=f'{config.chunk_size} samples',
-        chunk_length=f'{config.chunk_length_ms:.2f}ms',
+        chunk_length=f'{config.chunk_length_s * 1000:.2f}ms',
         channels=config.channels,
         in_device=config.in_device,
         out_device=config.out_device,
