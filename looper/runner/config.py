@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 import os
 from pathlib import Path
 
@@ -41,8 +41,12 @@ class Config:
     out_device: int = -1
 
     # name of the audio card device that should be used with JACK
-    online_jack_device: str = 'hw:1'
-    offline_jack_device: str = 'hw:0'
+    jack_online_in_device: str = 'hw:1'
+    jack_online_out_device: str = 'hw:1'
+    jack_offline_in_device: str = 'hw:0'
+    jack_offline_out_device: str = 'hw:0'
+
+    jack_playback_ports: Optional[List[str]] = None
 
     # mono
     channels: int = 1

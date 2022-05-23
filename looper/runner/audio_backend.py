@@ -81,12 +81,15 @@ class JackBackend(AudioBackend):
     def open(self, config: Config, stream_callback: Callable[[np.ndarray], np.ndarray]):
         log.info('Initializing JACK server for streaming audio...')
         if config.online:
-            device = config.online_jack_device
+            in_device = config.jack_online_in_device
+            out_device = config.jack_online_out_device
         else:
-            device = config.offline_jack_device
+            in_device = config.jack_offline_in_device
+            out_device = config.jack_offline_out_device
 
         cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
-                  f' --device {device}' \
+                  f' --device {in_device}' \
+                  f' --device {out_device}' \
                   f' --period {config.chunk_size}' \
                   f' --rate {config.sampling_rate}'
 
@@ -112,12 +115,16 @@ class JackBackend(AudioBackend):
         assert system_inputs, 'No jack inputs found to record from'
         system_input = system_inputs[-1]
 
-        system_outputs = client.get_ports(is_audio=True, is_input=True, is_physical=True)
-        assert system_outputs, 'No jack outputs found to play to'
-        if len(system_outputs) > 1:
-            system_playback_ports = [system_outputs[-2], system_outputs[-1]]
+        if config.jack_playback_ports:
+            system_playback_ports = []
+            for port_name in config.jack_playback_ports:
+                ports = client.get_ports(port_name, is_audio=True, is_input=True, is_physical=True)
+                assert len(ports) == 1, f'No jack output found for {port_name}'
+                system_playback_ports.extend(ports)
         else:
-            system_playback_ports = [system_outputs[-1]]
+            system_playback_ports = client.get_ports(is_audio=True, is_input=True, is_physical=True)
+            assert system_playback_ports, 'No jack outputs found to play to'
+
         playback_names = ', '.join([port.name for port in system_playback_ports])
         log.info('Wiring JACK ports', capture=system_input.name, playback_ports=playback_names)
 

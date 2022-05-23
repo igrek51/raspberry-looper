@@ -81,8 +81,8 @@ On the Raspberry Pi:
     - F6, 
     - select USB Audio Device,
     - F5 (to view Playback and Capture), 
-    - Speaker Volume to 100% (0 dB),
-    - Capture Mic Volume to 13% (0 dB).
+    - Speaker Volume to 100% (0-4 dB),
+    - Capture Mic Volume to 13%-27% (0-9 dB).
 
 On the host:
 
