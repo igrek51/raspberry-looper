@@ -7,6 +7,10 @@
         <div class="card-header">Manage tracks</div>
         <div class="card-body">
 
+            <button type="button" class="btn btn-danger" id="btn-reset-tracks">Reset all tracks</button>
+            <br />
+            <br />
+
             {% for track in tracks %}
             <div class="card text-dark bg-light mb-3">
                 <div class="card-header">Track {{track.index + 1}}: {{track.name}}</div>
@@ -24,8 +28,6 @@
             {% endfor %}
 
             <button type="button" class="btn btn-primary" id="btn-add-track">Add track</button>
-            <br />
-            <button type="button" class="btn btn-danger" id="btn-reset-tracks">Reset all tracks</button>
 
         </div>
     </div>

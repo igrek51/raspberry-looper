@@ -184,4 +184,5 @@ async def _get_player_status(looper: Looper) -> Dict:
         'phase': looper.phase.name,
         'progress': looper.relative_progress,
         'loop_duration': looper.loop_duration,
+        'loop_tempo': looper.loop_tempo,
     }

@@ -13,7 +13,7 @@ from looper.runner.dsp import SignalProcessor
 from looper.runner.metronome import Metronome
 from looper.runner.pinout import Pinout
 from looper.runner.recorder import OutputRecorder
-from looper.runner.sample import sample_format_max_amplitude
+from looper.runner.sample import sample_format_bytes, sample_format_max_amplitude
 from looper.runner.track import Track
 
 
@@ -52,6 +52,12 @@ class Looper:
     @property
     def loop_duration(self) -> float:
         return len(self.master_chunks) * self.config.chunk_length_s
+
+    @property
+    def loop_tempo(self) -> float:
+        if not self.master_chunks:
+            return 0
+        return 4 * 60 / self.loop_duration  # BPM
 
     @property
     def relative_progress(self) -> float:
@@ -205,13 +211,16 @@ class Looper:
                     track.set_empty(self.loop_chunks_num)
             self.phase = LoopPhase.LOOP
 
-        loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
         loudness = self.dsp.compute_loudness(self.master_chunks)  # should be below 0
+        samples_num = self.loop_chunks_num * self.config.chunk_size
+        track_kb = samples_num * sample_format_bytes(self.config.sample_format) / 1024
         log.info(f'master loop has been recorded', 
-            loop_duration=f'{round(loop_duration_s, 2)}s',
+            loop_duration=f'{round(self.loop_duration, 2)}s',
+            loop_tempo=f'{round(self.loop_tempo, 2)} BPM',
             loudness=f'{round(loudness, 2)}dB',
             chunks=self.loop_chunks_num,
-            samples=self.loop_chunks_num*self.config.chunk_size,
+            samples=samples_num,
+            track_memory=f'{track_kb} kiB',
         )
         if loudness > 0:
             log.warn('master loop is too loud', loudness=f'{round(loudness, 2)}dB')
@@ -315,11 +324,10 @@ class Looper:
                     track.set_empty(self.loop_chunks_num)
             self.phase = LoopPhase.LOOP
 
-        loop_duration_s = self.loop_chunks_num * self.config.chunk_length_s
         log.info(f'master loop has been set to metronome beats', 
             bpm=bpm,
             beats=beats,
-            loop_duration=f'{round(loop_duration_s, 2)}s',
+            loop_duration=f'{round(self.loop_duration, 2)}s',
             chunks=self.loop_chunks_num,
             samples=self.loop_chunks_num*self.config.chunk_size,
         )
