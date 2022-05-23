@@ -8,7 +8,7 @@ import warnings
 from nuclear.sublog import log
 from nuclear.utils.shell import shell
 from gpiozero import BadPinFactory, PinFactoryFallback
-from pynput import keyboard
+from getkey import getkey, keys
 
 from looper.runner.server import Server, start_api
 from looper.runner.config import AudioBackendType, load_config
@@ -97,16 +97,11 @@ async def update_leds_loop(looper: Looper):
 
 async def handle_key_press(looper: Looper):
     if looper.config.spacebar_footswitch:
-        def on_press(key):
-            try:
-                if key == keyboard.Key.space:
-                    log.debug('Space key pressed, simulating footswitch')
-                    looper.on_footswitch_press()
-            except AttributeError:
-                pass
-
-        with keyboard.Listener(on_press=on_press) as listener:
-            listener.join()
+        while True:
+            key = getkey()
+            if key == keys.SPACE:
+                log.debug('Space key pressed, simulating footswitch')
+                looper.on_footswitch_press()
 
 
 def shutdown(looper: Looper):

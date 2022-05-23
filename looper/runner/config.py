@@ -80,8 +80,8 @@ class Config:
     # Metronome
     metronome_volume: float = -17
 
-    # If enabled, pressing spacebar key activates recording like footswitch
-    spacebar_footswitch: bool = False
+    # If enabled, pressing spacebar key activates recording like footswitch does
+    spacebar_footswitch: bool = True
 
 
     @property
