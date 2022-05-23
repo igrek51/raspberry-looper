@@ -66,8 +66,7 @@ On your host:
 
 On the Raspberry Pi:
 
-6. Install pyaudio: `sudo apt install python3-pyaudio`.  
-   (On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197))
+6. Install pyaudio: `sudo apt install python3-pyaudio`.
 
 7. Install required packages: `sudo apt install libatlas-base-dev screen`
 
@@ -89,9 +88,9 @@ On the host:
 
 10. Run `make remote-install` to push the source code.
 
-11. Log in again via SSH to reload `~/.profile`.
-
 On Raspberry Pi:
+
+11. Log in again via SSH to reload `~/.profile`.
 
 12. Add looper to autostart:
 ```bash
@@ -106,16 +105,19 @@ EOF
 13. Reboot or run `looper run`.
 
 ### Running on PC with Linux
-Looper can run on a regular PC with Linux in a mode without controlling buttons and LEDs
-(cause there is no GPIO module). The application can be still controlled by a web browser.
+Looper can also run on a regular Linux PC in a special "Offline" mode without controlling buttons and LEDs
+(cause there is no GPIO module). 
+The application can be still controlled by a web browser.
+Virtual footswitch can be configured to turn recording on spacebar press.
 
 You need Python 3.8 or higher 
-(at this moment pyaudio has some issues with Python 3.10, so 3.8, 3.9 versions are recommended).
+(at this moment `pyaudio` lib has some issues with Python 3.10, so 3.8 or 3.9 versions are recommended).
 
 1. Install required libraries:  
-  `sudo apt install python3-pyaudio` (On Debian: `sudo apt install portaudio19-dev`)  
+  `sudo apt install python3-pyaudio`  
+   (On Debian: `sudo apt install portaudio19-dev` or do as stated [here](https://stackoverflow.com/a/35593426/6772197))
   `sudo apt install libatlas-base-dev`  
-2. Install JACK (if about to use JACK audio backend):  
+2. Install JACK (if you're going to use JACK audio backend):  
   ```bash
   sudo apt install jackd
   sudo usermod -a -G audio $USER
@@ -123,6 +125,7 @@ You need Python 3.8 or higher
   ```
 3. Create virtualenv and setup python project with `make setup`. Activate virtualenv: `. venv/bin/activate`.
 4. Run `looper run` and visit http://localhost:8000 in your browser to see the frontend app.
+5. Happy jamming!
 
 ## Usage
 Run `looper --help` to see available commands.
@@ -175,5 +178,6 @@ Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && mak
 
 ## References
 - Inspired by [raspi-looper](https://github.com/RandomVertebrate/raspi-looper)
-- Recording and playing audio in Python: [PyAudio docs](http://people.csail.mit.edu/hubert/pyaudio/#docs)
 - Controlling buttons and LEDs: [Raspberry GPIO controls](https://gpiozero.readthedocs.io/en/stable/recipes.html)
+- Recording and playing audio in Python: [PyAudio docs](http://people.csail.mit.edu/hubert/pyaudio/#docs)
+- Streaming with JACK: [JACK client for Python](https://jackclient-python.readthedocs.io/en/0.5.3/)
