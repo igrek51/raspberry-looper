@@ -6,10 +6,8 @@ from typing import List
 from pathlib import Path
 import pickle
 
-from pydub import AudioSegment
 from nuclear.sublog import log
 
-from looper.runner.config import Config
 from looper.runner.looper import LoopPhase, Looper
 from looper.runner.track import Track
 

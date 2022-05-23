@@ -58,15 +58,18 @@ def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
         if in_device == out_device:
             device = verify_device_index(in_device, pa)
             name = device['name']
-            log.info(f'using selected device "{name}" (index {in_device})')
+            log.info(f'using selected device "{name}" for capture and playback', index=in_device)
         return in_device, out_device
 
     best_device = _find_best_device(config, pa)
     if in_device == -1:
         in_device = best_device
     if out_device == -1:
-        if config.online:
+        if config.online and best_device != 0:
             out_device = 0  # built-in Raspberry sound card as default output
+            device = verify_device_index(out_device, pa)
+            name = device['name']
+            log.info(f'using device "{name}" for playback', index=out_device)
         else:
             out_device = best_device
     return in_device, out_device
@@ -83,12 +86,12 @@ def _find_best_device(config: Config, pa: pyaudio.PyAudio) -> int:
         if device is not None:
             index = device['index']
             name = device['name']
-            log.info(f'default device found, using device "{name}" (index {index})')
+            log.info(f'default device found, using device "{name}"', index=index)
             return index
 
     # get device with lowest index
     device = min(devices.values(), key=lambda x: x['index'])
     index = device['index']
     name = device['name']
-    log.info(f'device chosen automatically, using device "{name}" (index {index})')
+    log.info(f'device chosen automatically, using device "{name}" for capture', index=index)
     return index

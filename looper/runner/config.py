@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional
+
+from pydantic import BaseSettings
 
 
 class AudioBackendType(Enum):
@@ -8,8 +9,7 @@ class AudioBackendType(Enum):
     JACK = 'jack'  # JACKd server for real-time, low-latency audio streaming, but disabling other apps
 
 
-@dataclass
-class Config:
+class Config(BaseSettings):
     # Backend for streaming audio (on all devices): pyaudio or jack
     audio_backend: Optional[AudioBackendType] = None
 

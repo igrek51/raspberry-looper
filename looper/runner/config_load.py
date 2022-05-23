@@ -3,10 +3,9 @@ import os
 from pathlib import Path
 
 import yaml
-import dacite
 from nuclear.sublog import log
 
-from looper.runner.config import AudioBackendType, Config
+from looper.runner.config import Config
 
 DEFAULT_CONFIG_FILENAME = 'default.config.yaml'
 CONFIG_FILE_ENV = 'CONFIG_FILE'
@@ -39,11 +38,7 @@ def load_config_from_file(path: Path) -> Config:
                 log.info('config file is empty, loading default config')
                 return Config()
                 
-            config = dacite.from_dict(
-                data_class=Config,
-                data=config_dict,
-                config=dacite.Config(cast=[AudioBackendType]),
-            )
+            config = Config.parse_obj(config_dict)
             log.info(f'config loaded from {path}: {config_dict}')
             return config
     except Exception as e:
