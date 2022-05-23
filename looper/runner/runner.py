@@ -15,9 +15,9 @@ from looper.runner.pinout import Pinout
 from looper.runner.looper import Looper
 
 
-def run_looper(audio_backend_type: Optional[str] = None):
+def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
     log.info('Starting looper...')
-    config = load_config()
+    config = load_config(config_path)
     if audio_backend_type:
         config.audio_backend = AudioBackendType(audio_backend_type)
 
@@ -32,10 +32,10 @@ def run_looper(audio_backend_type: Optional[str] = None):
     log.info('Current Configuration', 
         audio_backend=config.audio_backend_type.value,
         offline_mode=config.offline,
+        sample_format=config.sample_format,
         sampling_rate=f'{config.sampling_rate}Hz',
         chunk_size=f'{config.chunk_size} samples',
         chunk_length=f'{config.chunk_length_ms:.2f}ms',
-        sample_format=config.sample_format,
         channels=config.channels,
         in_device=config.in_device,
         out_device=config.out_device,

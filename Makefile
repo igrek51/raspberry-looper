@@ -32,6 +32,9 @@ jupyter:
 logs:
 	less -R /home/pi/looper/looper.log
 
+vnc:
+	x11vnc -forever -display :0
+
 
 remote-create-dir:
 	ssh pi "mkdir -p /home/pi/looper"

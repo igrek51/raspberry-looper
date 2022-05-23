@@ -143,6 +143,30 @@ This gives access to more options like:
 - recording output session to MP3 file and downloading it from there,
 - displaying track plots.
 
+## Configuration
+If you wish to override the default configuration,
+create a `default.config.yaml` file in the project directory
+and fill it according to [config.py](./looper/runner/config.py).
+For instance:
+```yaml
+# Backend for streaming audio chunks: pyaudio or jack
+audio_backend: jack
+# Sampling size (bit depth) and sample format
+sample_format: float32
+# sampling rate [Hz], eg.: 44100, 48000
+sampling_rate: 48000
+# buffer size, number of frames per buffer
+chunk_size: 1024
+
+# number of available tracks in looper
+tracks_num: 8
+
+# HTTP server port for web interface and API
+http_port: 8080
+```
+
+You can also create multiple config files and run `looper run --config variant2.config.yaml`.
+
 ## Logs
 Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
 

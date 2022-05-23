@@ -16,7 +16,7 @@ class AudioBackendType(Enum):
 
 @dataclass
 class Config:
-    # Superior backend for streaming audio chunks (on all devices)
+    # Superior backend for streaming audio chunks (on all devices): pyaudio or jack
     audio_backend: Optional[AudioBackendType] = None
     # Backend for streaming audio chunks on Raspberry Pi
     online_audio_backend: AudioBackendType = AudioBackendType.JACK
@@ -29,7 +29,7 @@ class Config:
     # buffer size, number of frames per buffer
     chunk_size: int = 1024
 
-    # Sampling size and format, bit depth (16 or 32-bit)
+    # Sampling size (bit depth) and sample format
     # - int16 - 16bits, integer
     # - int32 - 32bits, integer
     # - float32 - 32bits, float
@@ -51,6 +51,7 @@ class Config:
     # see https://music.stackexchange.com/a/30325 for optimal values
     latency_ms: float = 46.44
 
+    # maximum duration of a track in seconds
     max_loop_duration_s: float = 4 * 60
 
     # number of available tracks in looper
@@ -61,13 +62,15 @@ class Config:
     # Offline mode - without Raspberry Pi pins nor audio devices
     offline: bool = False
 
+    # Working directory to be used for storing recordings and sessions
     workdir: str = '/home/pi/looper'
 
+    # HTTP server port for web interface and API
     http_port: int = 8000
 
     # Output Recorder
     output_recordings_dir: str = "out/recordings"
-    leave_wav_recordings: bool = True
+    leave_wav_recordings: bool = False
     # max gain in dB to normalize recorded output
     recorder_max_gain: float = 30
 
@@ -101,10 +104,11 @@ class Config:
         return self.offline_audio_backend if self.offline else self.online_audio_backend
 
 
-def load_config() -> Config:
-    config_file_path = os.environ.get('CONFIG_FILE')
+def load_config(config_file_path: Optional[str] = None) -> Config:
     if not config_file_path:
-        path = Path('config.yaml')
+        config_file_path = os.environ.get('CONFIG_FILE')
+    if not config_file_path:
+        path = Path('default.config.yaml')
         if path.is_file():
             log.info(f'found "{path}" file at default config path')
             return load_config_from_file(path)

@@ -11,12 +11,13 @@ def main():
     cli = CliBuilder(log_error=True)
 
     @cli.add_command("run")
-    def run(backend: Optional[str] = None):
+    def run(config: Optional[str] = None, backend: Optional[str] = None):
         """
         Run looper in a standard mode
+        :param config: path to config YAML file
         :param backend: audio backend for streaming chunks, pyaudio or jack
         """
-        run_looper(backend)
+        run_looper(config, backend)
 
     @cli.add_command("wire")
     def wire():
