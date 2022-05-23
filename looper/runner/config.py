@@ -80,6 +80,9 @@ class Config:
     # Metronome
     metronome_volume: float = -17
 
+    # If enabled, pressing spacebar key activates recording like footswitch
+    spacebar_footswitch: bool = False
+
 
     @property
     def chunk_length_ms(self) -> float:

@@ -8,6 +8,7 @@ import warnings
 from nuclear.sublog import log
 from nuclear.utils.shell import shell
 from gpiozero import BadPinFactory, PinFactoryFallback
+from pynput import keyboard
 
 from looper.runner.server import Server, start_api
 from looper.runner.config import AudioBackendType, load_config
@@ -45,6 +46,7 @@ def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
         output_sessions_dir=config.output_sessions_dir,
         metronome_volume=f'{config.metronome_volume}dB',
         http_port=config.http_port,
+        spacebar_footswitch=config.spacebar_footswitch,
     )
     
     _change_workdir(config.workdir)
@@ -76,6 +78,7 @@ async def main_async_loop(looper: Looper):
     await asyncio.gather(
         progress_loop(looper),
         update_leds_loop(looper),
+        handle_key_press(looper),
     )
 
 
@@ -90,6 +93,20 @@ async def update_leds_loop(looper: Looper):
         if looper.config.online:
             looper.update_leds()
         await asyncio.sleep(1)
+
+
+async def handle_key_press(looper: Looper):
+    if looper.config.spacebar_footswitch:
+        def on_press(key):
+            try:
+                if key == keyboard.Key.space:
+                    log.debug('Space key pressed, simulating footswitch')
+                    looper.on_footswitch_press()
+            except AttributeError:
+                pass
+
+        with keyboard.Listener(on_press=on_press) as listener:
+            listener.join()
 
 
 def shutdown(looper: Looper):

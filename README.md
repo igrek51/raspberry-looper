@@ -163,6 +163,9 @@ tracks_num: 8
 
 # HTTP server port for web interface and API
 http_port: 8080
+
+# If enabled, pressing spacebar key activates recording like footswitch
+spacebar_footswitch: true
 ```
 
 You can also create multiple config files and run `looper run --config variant2.config.yaml`.
