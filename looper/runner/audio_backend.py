@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from random import sample
-from typing import Callable
+from typing import Callable, List
 
 import pyaudio
 from nuclear.sublog import log, log_exception
@@ -87,14 +87,16 @@ class JackBackend(AudioBackend):
             in_device = config.jack_offline_in_device
             out_device = config.jack_offline_out_device
 
+        # Multiple soundcards with JACK: https://jackaudio.org/faq/multiple_devices.html
+        # ALSA driver options: http://ccrma.stanford.edu/planetccrma/man/man1/jackd.1.html
         cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
-                  f' --device {in_device}' \
-                  f' --device {out_device}' \
+                  f' --capture {in_device} --playback {out_device}' \
                   f' --period {config.chunk_size}' \
+                  f' --nperiods 2' \
                   f' --rate {config.sampling_rate}'
 
         def on_jackd_error(e: CommandError):
-            log.error(f'JACK server failed to start')
+            log.error(f'JACK server failed')
         
         def on_next_line(line: str):
             log.debug(f'JACK output', stdout=line.strip())
@@ -104,29 +106,20 @@ class JackBackend(AudioBackend):
             print_stdout=False, debug=True,
         )
 
-        client = self.open_client()
-        self.jack_client = client
+        client: jack.Client = self.open_client()
+        self.jack_client: jack.Client = client
         log.info('JACK server started')
+        self.list_ports()
 
         looper_input = client.inports.register('input_2')
         looper_output = client.outports.register('output_2')
 
-        system_inputs = client.get_ports(is_audio=True, is_output=True, is_physical=True)
-        assert system_inputs, 'No jack inputs found to record from'
-        system_input = system_inputs[-1]
+        capture_ports = self.get_capture_ports(config)
+        playback_ports = self.get_playback_ports(config)
 
-        if config.jack_playback_ports:
-            system_playback_ports = []
-            for port_name in config.jack_playback_ports:
-                ports = client.get_ports(port_name, is_audio=True, is_input=True, is_physical=True)
-                assert len(ports) == 1, f'No jack output found for {port_name}'
-                system_playback_ports.extend(ports)
-        else:
-            system_playback_ports = client.get_ports(is_audio=True, is_input=True, is_physical=True)
-            assert system_playback_ports, 'No jack outputs found to play to'
-
-        playback_names = ', '.join([port.name for port in system_playback_ports])
-        log.info('Wiring JACK ports', capture=system_input.name, playback_ports=playback_names)
+        capture_names = ', '.join([port.name for port in capture_ports])
+        playback_names = ', '.join([port.name for port in playback_ports])
+        log.info('Wiring JACK ports', capture_ports=capture_names, playback_ports=playback_names)
 
         if config.sample_format in {'int16', 'int32'}:
             dst_max_amp = sample_format_max_amplitude(config.sample_format)
@@ -155,8 +148,9 @@ class JackBackend(AudioBackend):
             log.info('JACK shutdown', status=status, reason=reason)
 
         client.activate()
-        client.connect(system_input, looper_input)
-        for playback_port in system_playback_ports:
+        for capture_port in capture_ports:
+            client.connect(capture_port, looper_input)
+        for playback_port in playback_ports:
             client.connect(looper_output, playback_port)
 
         log.info('JACK stream started')
@@ -177,3 +171,45 @@ class JackBackend(AudioBackend):
     def open_client(self) -> jack.Client:
         log.debug('Connecting to JACK server...')
         return jack.Client('raspberry_looper', no_start_server=True)
+
+    def list_ports(self):
+        playback_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_input=True)
+        capture_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_output=True)
+        virtual_ports = self.jack_client.get_ports(is_physical=False)
+        nonaudio_ports = self.jack_client.get_ports(is_audio=False)
+
+        port_names = ', '.join([port.name for port in capture_ports])
+        log.debug('found JACK capture ports', capture_ports=port_names)
+        port_names = ', '.join([port.name for port in playback_ports])
+        log.debug('found JACK playback ports', playback_ports=port_names)
+        if virtual_ports:
+            port_names = ', '.join([port.name for port in virtual_ports])
+            log.debug('found JACK non-physical ports', virtual_ports=port_names)
+        if nonaudio_ports:
+            port_names = ', '.join([port.name for port in nonaudio_ports])
+            log.debug('found JACK non-audio ports', nonaudio_ports=port_names)
+
+    def get_capture_ports(self, config: Config) -> List[jack.Port]:
+        if config.jack_capture_ports:
+            ports = []
+            for port_name in config.jack_capture_ports:
+                capture_ports = self.jack_client.get_ports(port_name, is_audio=True, is_output=True)
+                assert capture_ports, f'Not found jack capture port {port_name}'
+                ports.extend(capture_ports)
+            return ports
+        else:
+            capture_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_output=True)
+            assert capture_ports, 'No jack capture ports found to record from'
+            return [capture_ports[-1]]
+
+    def get_playback_ports(self, config: Config) -> List[jack.Port]:
+        if config.jack_playback_ports:
+            ports = []
+            for port_name in config.jack_playback_ports:
+                playback_ports = self.jack_client.get_ports(port_name, is_audio=True, is_input=True)
+                assert playback_ports, f'Not found jack playback port {port_name}'
+                ports.extend(playback_ports)
+            return ports
+        else:
+            playback_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_input=True)
+            assert playback_ports, 'No jack playback ports found to play to'

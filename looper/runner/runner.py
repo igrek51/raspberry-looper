@@ -32,7 +32,7 @@ def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
         pinout = None
 
     log.info('Current Configuration', 
-        audio_backend=config.audio_backend_type.value,
+        audio_backend=config.active_audio_backend_type.value,
         offline_mode=config.offline,
         sample_format=config.sample_format,
         sampling_rate=f'{config.sampling_rate}Hz',

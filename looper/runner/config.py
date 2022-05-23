@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List, Optional
 
@@ -12,10 +12,6 @@ class AudioBackendType(Enum):
 class Config:
     # Backend for streaming audio (on all devices): pyaudio or jack
     audio_backend: Optional[AudioBackendType] = None
-    # Backend for streaming audio chunks on Raspberry Pi
-    online_audio_backend: AudioBackendType = AudioBackendType.JACK
-    # Backend for streaming audio chunks on regular PC
-    offline_audio_backend: AudioBackendType = AudioBackendType.PYAUDIO
 
     # sampling rate [Hz], eg.: 44100, 48000
     sampling_rate: int = 48000
@@ -40,6 +36,7 @@ class Config:
     jack_offline_in_device: str = 'hw:0'
     jack_offline_out_device: str = 'hw:0'
 
+    jack_capture_ports: Optional[List[str]] = None
     jack_playback_ports: Optional[List[str]] = None
 
     # mono
@@ -58,7 +55,7 @@ class Config:
     # Amplification of the input signal [dB]
     input_volume: float = 0
 
-    # Offline mode - without Raspberry Pi pins nor audio devices
+    # Offline mode - without Raspberry Pi pins
     offline: bool = False
 
     # Working directory to be used for storing recordings and sessions
@@ -99,7 +96,7 @@ class Config:
         return not self.offline
 
     @property
-    def audio_backend_type(self) -> AudioBackendType:
+    def active_audio_backend_type(self) -> AudioBackendType:
         if self.audio_backend is not None:
             return self.audio_backend
-        return self.offline_audio_backend if self.offline else self.online_audio_backend
+        return AudioBackendType.PYAUDIO if self.offline else AudioBackendType.JACK
