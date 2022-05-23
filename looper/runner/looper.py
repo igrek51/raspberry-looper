@@ -1,6 +1,6 @@
 import asyncio
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 from enum import Enum
 from threading import Lock
 
@@ -75,6 +75,7 @@ class Looper:
             self.master_chunks = []
             self.tracks = []
             self.tracks_num = self.config.tracks_num
+            self.input_volume = self.config.input_volume
             self.main_track = 0
             for track_id in range(self.tracks_num):
                 has_gpio = track_id < self.config.tracks_gpio_num
@@ -101,21 +102,18 @@ class Looper:
             input_chunk = input_chunk + self._baseline_bias
             input_chunk = self.dsp.amplify(input_chunk, self.input_volume)
 
-        with self._lock:
-            # just listening to the input
-            if self.phase == LoopPhase.VOID:
-                out_chunk = input_chunk
+        # listening to the input
+        out_chunk = input_chunk if self.config.listen_input else self.dsp.silence()
 
+        with self._lock:
             # Recording master loop
             if self.phase == LoopPhase.RECORDING_MASTER:
                 if self.loop_chunks_num < self.config.max_loop_chunks:
                     self.master_chunks.append(input_chunk)
-                out_chunk = input_chunk
 
-            # Loop playback + Overdub
+            # Recorded loop playback + Overdub
             if self.phase == LoopPhase.LOOP:
-                # Play input with recorded loops
-                out_chunk = self.current_playback(input_chunk)
+                out_chunk = self.current_playback(out_chunk)
                 self.overdub(input_chunk)
                 self.next_chunk()
 

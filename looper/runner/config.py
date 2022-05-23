@@ -45,10 +45,6 @@ class Config:
     # mono
     channels: int = 1
 
-    # latency between recording sound and playing it again in a loopback in milliseconds
-    # see https://music.stackexchange.com/a/30325 for optimal values
-    latency_ms: float = 46.44
-
     # maximum duration of a track in seconds
     max_loop_duration_s: float = 4 * 60
 
@@ -56,6 +52,11 @@ class Config:
     tracks_num: int = 4
     # number of tracks with buttons and LEDs connected to the board
     tracks_gpio_num: int = 2
+
+    # Whether to play input to the output
+    listen_input: bool = True
+    # Amplification of the input signal [dB]
+    input_volume: float = 0
 
     # Offline mode - without Raspberry Pi pins nor audio devices
     offline: bool = False
