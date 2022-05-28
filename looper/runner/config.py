@@ -99,4 +99,4 @@ class Config(BaseSettings):
     def active_audio_backend_type(self) -> AudioBackendType:
         if self.audio_backend is not None:
             return self.audio_backend
-        return AudioBackendType.PYAUDIO if self.offline else AudioBackendType.JACK
+        return AudioBackendType.PYAUDIO
