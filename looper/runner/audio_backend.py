@@ -172,21 +172,13 @@ class JackBackend(AudioBackend):
         return jack.Client('raspberry_looper', no_start_server=True)
 
     def list_ports(self):
-        playback_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_input=True)
-        capture_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_output=True)
-        virtual_ports = self.jack_client.get_ports(is_physical=False)
-        nonaudio_ports = self.jack_client.get_ports(is_audio=False)
+        playback_ports = self.jack_client.get_ports(is_input=True)
+        capture_ports = self.jack_client.get_ports(is_output=True)
 
         port_names = ', '.join([port.name for port in capture_ports])
         log.debug('found JACK capture ports', capture_ports=port_names)
         port_names = ', '.join([port.name for port in playback_ports])
         log.debug('found JACK playback ports', playback_ports=port_names)
-        if virtual_ports:
-            port_names = ', '.join([port.name for port in virtual_ports])
-            log.debug('found JACK non-physical ports', virtual_ports=port_names)
-        if nonaudio_ports:
-            port_names = ', '.join([port.name for port in nonaudio_ports])
-            log.debug('found JACK non-audio ports', nonaudio_ports=port_names)
 
     def get_capture_ports(self, config: Config) -> List[jack.Port]:
         if config.jack_capture_ports:
@@ -212,3 +204,4 @@ class JackBackend(AudioBackend):
         else:
             playback_ports = self.jack_client.get_ports(is_audio=True, is_physical=True, is_input=True)
             assert playback_ports, 'No jack playback ports found to play to'
+            return playback_ports

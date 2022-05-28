@@ -67,8 +67,9 @@ def find_device_index(config: Config, pa: pyaudio.PyAudio) -> Tuple[int, int]:
     if out_device == -1:
         if config.online and best_device != 0:
             out_device = 0  # built-in Raspberry sound card as default output
-            device = verify_device_index(out_device, pa)
-            name = device['name']
+            out_device_info = pa.get_device_info_by_index(out_device)
+            name = out_device_info['name']
+            assert out_device_info.get('maxOutputChannels', 0) > 0, 'device has no output channels'
             log.info(f'using device "{name}" for playback', index=out_device)
         else:
             out_device = best_device
