@@ -20,8 +20,8 @@ class Metronome:
         samples_num = self.config.chunk_size * chunks_num
         samples_per_beat = int(beat_period_s * self.config.sampling_rate)
 
-        beat_high = self.load_wav_array(Path('sfx') / 'metronome-beat-high.wav')
-        beat_low = self.load_wav_array(Path('sfx') / 'metronome-beat-low.wav')
+        beat_high = self.load_wav_array(Path('sfx') / f'metronome-beat-high-{self.config.sampling_rate}.wav')
+        beat_low = self.load_wav_array(Path('sfx') / f'metronome-beat-low-{self.config.sampling_rate}.wav')
 
         np_type = sample_format_numpy_type(self.config.sample_format)
         track = np.zeros(samples_num, dtype=np_type)
@@ -39,7 +39,8 @@ class Metronome:
 
     def load_wav_array(self, path: Path) -> np.array:
         samplerate, data = wavfile.read(str(path))
-        assert samplerate == self.config.sampling_rate
+        assert samplerate == self.config.sampling_rate, \
+            f'Sampling rate of metronome beat {samplerate} doesn\'t match {self.config.sampling_rate}'
         channels = data.shape[1]
         if channels > 1:
             left = data[:, 0]

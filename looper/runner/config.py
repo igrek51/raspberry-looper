@@ -23,7 +23,7 @@ class Config(BaseSettings):
     # - int16 - 16bits, integer
     # - int32 - 32bits, integer
     # - float32 - 32bits, float
-    sample_format: str = 'int32'
+    sample_format: str = 'float32'
 
     # index of input device, -1 find automatically
     in_device: int = -1
@@ -74,7 +74,7 @@ class Config(BaseSettings):
     output_sessions_dir: str = "out/sessions"
 
     # Metronome
-    metronome_volume: float = -17
+    metronome_volume: float = -1
 
     # If enabled, pressing spacebar key activates recording like footswitch does
     spacebar_footswitch: bool = True
