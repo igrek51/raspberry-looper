@@ -19,7 +19,7 @@ class SignalProcessor:
     def fade_out(self, buffer):
         np.multiply(buffer, self.downramp, out=buffer, casting="unsafe")
 
-    def sine(self, frequency: float = 440, amplitude: int = 32767) -> np.array:
+    def sine(self, amplitude: int, frequency: float = 440) -> np.array:
         sine_sample_frequency = frequency / self.config.sampling_rate
         sine = np.empty(self.config.chunk_size, dtype=self.np_type)
         for i in range(self.config.chunk_size):

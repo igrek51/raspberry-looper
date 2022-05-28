@@ -1,18 +1,20 @@
+import re
 import time
 from pathlib import Path
 import math
+from typing import List
 
 import pyaudio
 from nuclear.sublog import log
 import numpy as np
-from looper.runner.audio_backend import PyAudioBackend
+from looper.runner.audio_backend import AudioBackend, PyAudioBackend
 
 from looper.runner.config import Config
 from looper.runner.dsp import SignalProcessor
-from looper.runner.sample import sample_format_numpy_type
+from looper.runner.sample import sample_format_numpy_type, sample_format_max_amplitude
 
 
-def measure_latency():
+def measure_input_latency():
     log.info("Measuring output-input latency...")
     log.info("Put microphone close to a speaker or wire the output with the input.")
     log.debug("Initializing PyAudio...")
@@ -23,7 +25,7 @@ def measure_latency():
     dsp = SignalProcessor(config)
 
     silence = dsp.silence()
-    amplitude = 32767
+    amplitude = sample_format_max_amplitude(config.sample_format)
 
     log.info(f"one buffer length: {config.chunk_length_s * 1000}ms")
 
@@ -105,3 +107,84 @@ def measure_latency():
         min_latency_ms=latency_ms, 
         max_latency_max_ms=latency_max_ms)
     log.info(f'suggested latency: {latency_max_ms}ms')
+
+
+def measure_cycle_latency():
+    log.info("Measuring full cycle latency...")
+    log.info("Put microphone close to a speaker or wire the output with the input.")
+
+    config = Config()
+    dsp = SignalProcessor(config)
+    audio_backend = AudioBackend.make(config.active_audio_backend_type)
+
+    log.info(f"one buffer length", chunk_length=f'{config.chunk_length_s * 1000}ms')
+
+    max_amplitude = sample_format_max_amplitude(config.sample_format)
+    short_sine = _short_sine(dsp, config)
+    silence = dsp.silence()
+    arming_chunks_num = 20
+    recorded_chunks: List[np.array] = []
+    chunk_size = config.chunk_size
+
+    def stream_audio_chunk(input_chunk: np.ndarray) -> np.ndarray:
+        recorded_chunks.append(input_chunk)
+        if len(recorded_chunks) <= 10:
+            return silence
+        if len(recorded_chunks) == arming_chunks_num:
+            return short_sine
+        return input_chunk
+
+    audio_backend.open(config, stream_audio_chunk)
+
+    while len(recorded_chunks) < 40:
+        log.debug("Recording chunks...")
+        time.sleep(0.1)
+
+    audio_backend.close()
+    log.info("Recording stopped", chunks=len(recorded_chunks))
+
+    joined = np.concatenate(recorded_chunks)
+    record_file = Path('out/latency.rec')
+    record_file.parent.mkdir(exist_ok=True)
+    np.save(str(record_file), joined)
+    log.debug("recordings saved", record_file=record_file)
+
+    armed_chunks = joined[arming_chunks_num * chunk_size:]
+    peaks_mask = np.absolute(armed_chunks) > 0.1
+    max_recorded_amplitude = np.max(np.absolute(armed_chunks))
+    assert any(peaks_mask), f'no peak detected in recorded audio, max recorded amplitude: {max_recorded_amplitude}'
+
+    peak_indices = []
+    view = peaks_mask
+    offset = 0
+    while True:
+        first_peak = np.argmax(view)
+        if view[first_peak] == False:
+            break
+        peak_indices.append(first_peak + offset)
+        offset += first_peak+chunk_size
+        view = view[first_peak+chunk_size:]
+        if view.size == 0:
+            break
+    assert len(peak_indices) == 2, 'at least two peaks are expected'
+
+    peak_indices_diff = []
+    for i in range(len(peak_indices) - 1):
+        peak_indices_diff.append(peak_indices[i+1] - peak_indices[i])
+    peak_indices_diff
+
+    latency_median = np.median(peak_indices_diff)
+    latency_ms = latency_median * 1000 / config.sampling_rate
+
+    log.info('latency measured', 
+        latency_samples=latency_median,
+        latency_ms=f'{latency_ms} ms')
+
+
+def _short_sine(dsp: SignalProcessor, config: Config):
+    max_amplitude = sample_format_max_amplitude(config.sample_format)
+    sine = dsp.sine(frequency=440, amplitude=max_amplitude)
+    for i in range(config.chunk_size):
+        if i > config.chunk_size // 2:
+            sine[i] = 0
+    return sine

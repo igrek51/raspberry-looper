@@ -2,7 +2,7 @@ from typing import Optional
 from nuclear import CliBuilder
 
 from looper.check.devices import list_devices
-from looper.check.latency import measure_latency
+from looper.check.latency import measure_input_latency, measure_cycle_latency
 from looper.check.wire import wire_input_output
 from looper.runner.runner import run_looper
 
@@ -24,10 +24,15 @@ def main():
         """Wire input with output"""
         wire_input_output()
 
-    @cli.add_command("latency")
-    def latency():
+    @cli.add_command('latency', 'input')
+    def latency_input():
         """Measure output-input latency"""
-        measure_latency()
+        measure_input_latency()
+
+    @cli.add_command('latency', 'cycle')
+    def latency_cycle():
+        """Measure full cycle latency"""
+        measure_cycle_latency()
 
     @cli.add_command("devices")
     def devices():
