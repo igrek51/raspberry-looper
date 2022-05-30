@@ -25,14 +25,17 @@ def main():
         wire_input_output()
 
     @cli.add_command('latency', 'input')
-    def latency_input():
+    def latency_input(config: Optional[str] = None):
         """Measure output-input latency"""
-        measure_input_latency()
+        measure_input_latency(config)
 
     @cli.add_command('latency', 'cycle')
-    def latency_cycle():
-        """Measure full cycle latency"""
-        measure_cycle_latency()
+    def latency_cycle(config: Optional[str] = None):
+        """
+        Measure full cycle latency
+        :param config: path to config YAML file
+        """
+        measure_cycle_latency(config)
 
     @cli.add_command("devices")
     def devices():

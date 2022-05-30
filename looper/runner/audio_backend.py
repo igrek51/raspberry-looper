@@ -88,8 +88,12 @@ class JackBackend(AudioBackend):
 
         # Multiple soundcards with JACK: https://jackaudio.org/faq/multiple_devices.html
         # ALSA driver options: http://ccrma.stanford.edu/planetccrma/man/man1/jackd.1.html
+        if in_device == out_device:
+            device_line = f' --device {in_device}'
+        else:
+            device_line = f' --capture {in_device} --playback {out_device}'
         cmdline = f'/usr/bin/jackd -ndefault --realtime -d alsa' \
-                  f' --capture {in_device} --playback {out_device}' \
+                  f'{device_line}' \
                   f' --period {config.chunk_size}' \
                   f' --nperiods 2' \
                   f' --rate {config.sampling_rate}'
@@ -136,7 +140,8 @@ class JackBackend(AudioBackend):
             @client.set_process_callback
             def process(blocksize: int):
                 input_chunk: np.ndarray = looper_input.get_array()  # float32
-                out_chunk = stream_callback(input_chunk)
+                input_copy = np.copy(input_chunk)
+                out_chunk = stream_callback(input_copy)
                 looper_output.get_array()[:] = out_chunk
 
         else:

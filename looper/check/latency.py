@@ -2,7 +2,7 @@ import re
 import time
 from pathlib import Path
 import math
-from typing import List
+from typing import List, Optional
 
 import pyaudio
 from nuclear.sublog import log
@@ -10,17 +10,18 @@ import numpy as np
 from looper.runner.audio_backend import AudioBackend, PyAudioBackend
 
 from looper.runner.config import Config
+from looper.runner.config_load import load_config
 from looper.runner.dsp import SignalProcessor
 from looper.runner.sample import sample_format_numpy_type, sample_format_max_amplitude
 
 
-def measure_input_latency():
+def measure_input_latency(config_path: Optional[str]):
     log.info("Measuring output-input latency...")
     log.info("Put microphone close to a speaker or wire the output with the input.")
     log.debug("Initializing PyAudio...")
     pa = pyaudio.PyAudio()
 
-    config = Config()
+    config = load_config(config_path)
     chunk = config.chunk_size
     dsp = SignalProcessor(config)
 
@@ -109,11 +110,11 @@ def measure_input_latency():
     log.info(f'suggested latency: {latency_max_ms}ms')
 
 
-def measure_cycle_latency():
+def measure_cycle_latency(config_path: Optional[str]):
     log.info("Measuring full cycle latency...")
     log.info("Put microphone close to a speaker or wire the output with the input.")
 
-    config = Config()
+    config = load_config(config_path)
     dsp = SignalProcessor(config)
     audio_backend = AudioBackend.make(config.active_audio_backend_type)
 
@@ -125,8 +126,11 @@ def measure_cycle_latency():
     arming_chunks_num = 20
     recorded_chunks: List[np.array] = []
     chunk_size = config.chunk_size
+    loopback = True
 
     def stream_audio_chunk(input_chunk: np.ndarray) -> np.ndarray:
+        if not loopback:
+            return silence
         recorded_chunks.append(input_chunk)
         if len(recorded_chunks) <= 10:
             return silence
@@ -140,6 +144,7 @@ def measure_cycle_latency():
         log.debug("Recording chunks...")
         time.sleep(0.1)
 
+    loopback = False
     audio_backend.close()
     log.info("Recording stopped", chunks=len(recorded_chunks))
 

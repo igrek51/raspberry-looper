@@ -176,6 +176,12 @@ You can also create multiple config files and run `looper run --config variant2.
 ## Logs
 Watch logs with `less -R /home/pi/looper/looper.log` or with `cd ~/looper && make logs`.
 
+## Latency
+Test results:
+
+- With `pyaudio` backend, looper introduces `21 - 46 ms` latency.
+- With `jack` audio backend, looper introduces `21 - 67 ms` latency.
+
 ## References
 - Inspired by [raspi-looper](https://github.com/RandomVertebrate/raspi-looper)
 - Controlling buttons and LEDs: [Raspberry GPIO controls](https://gpiozero.readthedocs.io/en/stable/recipes.html)
