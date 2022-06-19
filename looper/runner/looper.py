@@ -383,5 +383,5 @@ class Looper:
     def close(self):
         log.debug('closing looper...')
         if self.config.online:
-            self.pinout.init_leds()
+            self.pinout.tear_down()
         self.audio_backend.close()
