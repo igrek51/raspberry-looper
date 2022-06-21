@@ -4,13 +4,15 @@ import time
 from pathlib import Path
 from typing import Optional
 import warnings
+from threading import Thread
+import queue
 
 from nuclear.sublog import log
 from nuclear.utils.shell import shell
 from gpiozero import BadPinFactory, PinFactoryFallback
 from getkey import getkey, keys
 
-from looper.runner.server import Server, start_api
+from looper.runner.server import Server, start_api_in_background
 from looper.runner.config import AudioBackendType
 from looper.runner.config_load import load_config
 from looper.runner.pinout import Pinout
@@ -58,14 +60,18 @@ def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
     if config.online:
         pinout.shutdown_button.when_held = lambda: shutdown(looper)
 
-    server: Server = start_api(looper)
+    server: Server = start_api_in_background(looper)
 
     log.info('Ready to work')
     try:
-        asyncio.run(main_async_loop(looper))
+        if looper.config.async_loops:
+            asyncio.run(main_async_loop(looper, server))
+        server.wait()
     except KeyboardInterrupt:
         looper.close()
         server.stop()
+
+    log.debug('Off I go then')
 
 
 def _change_workdir(workdir: str):
@@ -75,12 +81,12 @@ def _change_workdir(workdir: str):
         log.warn(f"can't change working directory to {workdir}, running in {os.getcwd()}")
 
 
-async def main_async_loop(looper: Looper):
-    await asyncio.gather(
-        progress_loop(looper),
-        update_leds_loop(looper),
-        handle_key_press(looper),
-    )
+async def main_async_loop(looper: Looper, server: Server):
+    await asyncio.wait([
+            progress_loop(looper),
+            update_leds_loop(looper),
+            handle_key_press(looper),
+        ], return_when=asyncio.FIRST_EXCEPTION)
 
 
 async def progress_loop(looper: Looper):
@@ -98,11 +104,15 @@ async def update_leds_loop(looper: Looper):
 
 async def handle_key_press(looper: Looper):
     if looper.config.spacebar_footswitch:
-        while True:
-            key = getkey()
-            if key == keys.SPACE:
-                log.debug('Space key pressed, simulating footswitch')
-                looper.on_footswitch_press()
+
+        def read_keys_endless(looper):
+            while True:
+                key = getkey()
+                if key == keys.SPACE:
+                    log.debug('Space key pressed, simulating footswitch')
+                    looper.on_footswitch_press()
+
+        Thread(target=read_keys_endless, args=(looper,), daemon=True).start()
 
 
 def shutdown(looper: Looper):

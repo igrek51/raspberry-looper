@@ -30,8 +30,11 @@ class Server(uvicorn.Server):
         self.thread.join()
         log.debug("HTTP server stopped")
 
+    def wait(self):
+        self.thread.join()
 
-def start_api(looper: Looper) -> Server:
+
+def start_api_in_background(looper: Looper) -> Server:
     fastapi_app = creat_fastapi_app(looper)
     port = looper.config.http_port
     config = uvicorn.Config(app=fastapi_app, host="0.0.0.0", port=port, log_level="debug")

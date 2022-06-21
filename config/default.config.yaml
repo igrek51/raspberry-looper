@@ -1,0 +1,74 @@
+## Backend for streaming audio (on all devices): pyaudio or jack
+#audio_backend: None
+
+## sampling rate [Hz], eg.: 44100, 48000
+#sampling_rate: 48000
+
+## buffer size, number of frames per buffer
+#chunk_size: 1024
+
+## Sampling size (bit depth) and sample format
+## - int16 - 16bits, integer
+## - int32 - 32bits, integer
+## - float32 - 32bits, float
+#sample_format: 'float32'
+
+## index of input device, -1 find automatically
+#in_device: -1
+## index of output device, -1 find automatically
+#out_device: -1
+
+## name of the audio card device that should be used with JACK
+#jack_online_in_device: 'hw:1'
+#jack_online_out_device: 'hw:0'
+#jack_offline_in_device: 'hw:0'
+#jack_offline_out_device: 'hw:0'
+
+#jack_capture_ports: None
+#jack_playback_ports: None
+
+## mono
+#channels: 1
+
+## maximum duration of a track in seconds
+#max_loop_duration_s: 240
+
+## number of available tracks in looper
+#tracks_num: 4
+## number of tracks with buttons and LEDs connected to the board
+#tracks_gpio_num: 2
+
+## Whether to play input to the output
+#listen_input: True
+## Amplification of the input signal [dB]
+#input_volume: 11
+
+## Offline mode - without Raspberry Pi pins
+#offline: False
+
+## Working directory to be used for storing recordings and sessions
+#workdir: '/home/pi/looper'
+
+## HTTP server port for web interface and API
+#http_port: 8000
+
+## Output Recorder
+#output_recordings_dir: "out/recordings"
+#leave_wav_recordings: False
+## max gain in dB to normalize recorded output
+#recorder_max_gain: 30
+
+## Sessions
+#output_sessions_dir: "out/sessions"
+
+## Metronome
+#metronome_volume: -1
+
+## If enabled, pressing spacebar key activates recording like footswitch does
+#spacebar_footswitch: True
+
+## If enabled, baseline bias will be automatically normalized
+#auto_anti_bias: True
+
+## Enable asynchronous loops controlling buttons and diodes (consumes CPU)
+#async_loops: True

@@ -82,6 +82,9 @@ class Config(BaseSettings):
     # If enabled, baseline bias will be automatically normalized
     auto_anti_bias: bool = True
 
+    # Enable asynchronous loops controlling buttons and diodes (consumes CPU)
+    async_loops: bool = True
+
 
     @property
     def chunk_length_s(self) -> float:

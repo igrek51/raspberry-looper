@@ -1,6 +1,6 @@
 .PHONY: deploy build run setup test
 
-setup:
+setup-latest:
 	python3 -m venv venv &&\
 	. venv/bin/activate &&\
 	pip install --upgrade pip setuptools &&\
@@ -20,8 +20,13 @@ setup-python3.8:
 	@echo Activate your venv:
 	@echo . venv/bin/activate
 
+setup: setup-python3.8
+
 run:
 	looper run
+
+run-nice:
+	ionice -c 2 -n 0 nice -n -12 /home/ireneusz/y/raspberry-looper/venv/bin/python -m looper run
 
 test:
 	cd tests && python -m pytest -vv --tb=short -ra $(test)
