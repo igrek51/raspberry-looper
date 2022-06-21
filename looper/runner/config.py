@@ -53,7 +53,7 @@ class Config(BaseSettings):
     # Whether to play input to the output
     listen_input: bool = True
     # Amplification of the input signal [dB]
-    input_volume: float = 0
+    input_volume: float = 11
 
     # Offline mode - without Raspberry Pi pins
     offline: bool = False
