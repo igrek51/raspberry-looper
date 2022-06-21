@@ -45,6 +45,12 @@ class Pinout:
         self.init_leds()
         self.output_relay.off()
 
+    def set_output_relay(self, state: bool):
+        if state:
+            self.output_relay.on()
+        else:
+            self.output_relay.off()
+
     def on_button_click_and_hold(self, 
         btn: Button,
         on_click: Callable,
