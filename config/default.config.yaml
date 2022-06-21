@@ -72,3 +72,6 @@
 
 ## Enable asynchronous loops controlling buttons and diodes (consumes CPU)
 #async_loops: True
+
+# Set higher priority of a process
+# prioritize_process: True

@@ -26,7 +26,7 @@ run:
 	looper run
 
 run-nice:
-	ionice -c 2 -n 0 nice -n -12 /home/ireneusz/y/raspberry-looper/venv/bin/python -m looper run
+	ionice -c 2 -n 0 nice -n -12 python -m looper run
 
 test:
 	cd tests && python -m pytest -vv --tb=short -ra $(test)

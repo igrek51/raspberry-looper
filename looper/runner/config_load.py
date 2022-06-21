@@ -39,7 +39,7 @@ def load_config_from_file(path: Path) -> Config:
                 return Config()
                 
             config = Config.parse_obj(config_dict)
-            log.info(f'config loaded from {path}: {config_dict}')
+            log.info(f'config loaded from {path}', **config_dict)
             return config
     except Exception as e:
         raise RuntimeError('loading config failed') from e

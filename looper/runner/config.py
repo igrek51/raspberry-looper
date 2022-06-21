@@ -85,6 +85,9 @@ class Config(BaseSettings):
     # Enable asynchronous loops controlling buttons and diodes (consumes CPU)
     async_loops: bool = True
 
+    # Set higher priority of a process
+    prioritize_process: bool = True
+
 
     @property
     def chunk_length_s(self) -> float:

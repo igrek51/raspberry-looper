@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Optional
 import warnings
 from threading import Thread
-import queue
 
 from nuclear.sublog import log
-from nuclear.utils.shell import shell
+from nuclear.utils.shell import shell, shell_output
 from gpiozero import BadPinFactory, PinFactoryFallback
 from getkey import getkey, keys
 
@@ -53,6 +52,9 @@ def run_looper(config_path: Optional[str], audio_backend_type: Optional[str]):
     )
     
     _change_workdir(config.workdir)
+
+    if config.prioritize_process:
+        prioritize_process()
 
     looper = Looper(pinout, config)
     looper.run()
@@ -113,6 +115,18 @@ async def handle_key_press(looper: Looper):
                     looper.on_footswitch_press()
 
         Thread(target=read_keys_endless, args=(looper,), daemon=True).start()
+
+
+def prioritize_process():
+    pids = shell_output('pgrep -f "looper run"').strip().splitlines()[:-1]
+    if not pids:
+        log.warn('looper process was not found')
+        return
+    if len(pids) > 1:
+        log.warn('multiple looper process found', pids=pids)
+    priority = -20
+    shell(f'sudo renice -n {priority} -p {" ".join(pids)}')
+    log.info('process reniced with favorable priority', pid=pids[0], priority=priority)
 
 
 def shutdown(looper: Looper):
