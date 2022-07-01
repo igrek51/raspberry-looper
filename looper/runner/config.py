@@ -14,7 +14,7 @@ class Config(BaseSettings):
     audio_backend: Optional[AudioBackendType] = None
 
     # sampling rate [Hz], eg.: 44100, 48000
-    sampling_rate: int = 48000
+    sampling_rate: int = 44100
 
     # buffer size, number of frames per buffer
     chunk_size: int = 1024

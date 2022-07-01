@@ -34,6 +34,9 @@ class SignalProcessor:
         result = chunk * 10 ** (volume / 20)
         return result.astype(self.np_type)
 
+    def amplify_sample(self, number: float, volume: float) -> float:
+        return number * 10 ** (volume / 20)
+
     def compute_chunk_loudness(self, chunk: np.array) -> float:
         """Compute loudness in decibels relative to full scale (dBFS)"""
         rms = np.sqrt(np.mean(np.square(chunk / self.max_amp)))
@@ -53,7 +56,7 @@ class SignalProcessor:
             return -100
         return 20 * np.log10(rms * np.sqrt(2))
 
-    def calculate_baesline_bias(self, chunks: List[np.array]) -> float:
+    def calculate_baseline_bias(self, chunks: List[np.array]) -> float:
         """Calculate bias (in samples value) of the baseline compared to zero level"""
         if not chunks:
             return 0

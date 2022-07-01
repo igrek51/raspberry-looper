@@ -204,13 +204,17 @@ class Looper:
     def stop_recording_master(self):
         with self._lock:
             if self.config.auto_anti_bias:
-                chunks_bias = self.dsp.calculate_baesline_bias(self.master_chunks)
-                chunks_bias_fraction = chunks_bias / sample_format_max_amplitude(self.config.sample_format)
+
+                chunks_bias = self.dsp.calculate_baseline_bias(self.master_chunks)
+                chunks_bias = self.dsp.amplify_sample(chunks_bias, -self.input_volume)
                 self.dsp.move_by_offset(self.master_chunks, -chunks_bias)
                 self._baseline_bias -= chunks_bias
+
+                chunks_bias_fraction = chunks_bias / sample_format_max_amplitude(self.config.sample_format)
                 log.info(f'input baseline bias has been automatically compensated', 
                     bias=f'{round(chunks_bias, 6)}',
-                    full_scale_fraction=f'{round(chunks_bias_fraction, 6)}',
+                    total_bias=f'{round(self._baseline_bias, 6)}',
+                    bias_of_full_scale=f'{round(chunks_bias_fraction, 6)}',
                 )
 
             self.current_position = 0
