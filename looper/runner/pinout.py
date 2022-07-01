@@ -27,10 +27,7 @@ class Pinout:
         self.shutdown_button = Button(13)
         self.foot_switch = Button(19)
 
-        self.output_relay = LED(26)
-
         self.init_leds()
-        self.output_relay.on()
 
     def init_leds(self):
         self.loopback_led.on()
@@ -43,13 +40,6 @@ class Pinout:
 
     def tear_down(self):
         self.init_leds()
-        self.output_relay.off()
-
-    def set_output_relay(self, state: bool):
-        if state:
-            self.output_relay.on()
-        else:
-            self.output_relay.off()
 
     def on_button_click_and_hold(self, 
         btn: Button,

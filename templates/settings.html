@@ -44,14 +44,6 @@
                 </div>
             </div>
 
-            <div>
-                <div class="input-group mb-4">
-                    <span class="input-group-text">Output relay</span>
-                    <button class="btn btn-outline-secondary" type="button" id="btn-output-relay-off">Off</button>
-                    <button class="btn btn-outline-secondary" type="button" id="btn-output-relay-on">On</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -102,16 +94,6 @@ $(document).ready(function() {
         })
     })
 
-    $("#btn-output-relay-on").click(function () {
-        ajaxRequest('post', `/api/looper/output_relay/1`, function(data) {
-            showAlert('Output relay turned on', 'success')
-        })
-    })
-    $("#btn-output-relay-off").click(function () {
-        ajaxRequest('post', `/api/looper/output_relay/0`, function(data) {
-            showAlert('Output relay turned off', 'success')
-        })
-    })
 })
 </script>
 {% endblock %}

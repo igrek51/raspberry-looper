@@ -161,10 +161,6 @@ def setup_looper_endpoints(app: FastAPI, looper: Looper):
         return {
             'input_baseline_bias': looper.baseline_bias,
         }
-    
-    @app.post("/api/looper/output_relay/{state}")
-    async def rename_track(state: int):
-        looper.pinout.set_output_relay(True if state else False)
 
 
 async def _get_track_info(looper: Looper, track_id: int) -> Dict:
