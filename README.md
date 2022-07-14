@@ -31,6 +31,10 @@ Web application available at http://pi:8000 in your WiFi network:
 
 Check out [sample recording](https://raw.githubusercontent.com/igrek51/raspberry-looper/master/docs/example/list_2022-04-21_remaster.mp3)
 
+## Electrical Circuit Diagram
+
+![](./docs/img/looper-electrical-circuit.png)
+
 ## Setup
 
 ### Running on Raspberry Pi
